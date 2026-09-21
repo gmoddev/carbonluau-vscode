@@ -8,6 +8,13 @@ Canonical package/module/API/GUI semantics belong to
 [gmoddev/CarbonLuau](https://github.com/gmoddev/CarbonLuau). Start with
 [architecture routing](docs/Architecture.md) for the accepted baseline and phase plan.
 
+The [language-analysis security decision](docs/Architecture.md#language-analysis-security-amendment)
+now defines the Foundation A handoff: safe static features in Restricted Mode,
+trusted-only supervised LSP analysis over snapshots, and no workspace executable
+configuration/custom plugins. This documentation branch does not implement or
+enable that profile; the partial Foundation A implementation remains isolated
+and unqualified. Process separation is not a portable OS sandbox claim.
+
 Use Node.js 22 LTS (Node 20.9+ satisfies the current compiler/linter requirements):
 
 ```text
