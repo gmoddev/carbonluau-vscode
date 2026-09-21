@@ -1,0 +1,4 @@
+{
+  "TrustDescription": "This bootstrap executes no workspace code. Future preview, build and task execution require Workspace Trust.",
+  "VirtualDescription": "CarbonLuau tooling requires a filesystem workspace on a supported desktop or remote extension host."
+}

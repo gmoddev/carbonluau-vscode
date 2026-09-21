@@ -1,0 +1,12 @@
+.git/**
+.github/**
+node_modules/**
+extension/**
+tests/**
+docs/**
+tsconfig.json
+eslint.config.mjs
+package-lock.json
+.codexlock*
+AGENTS.md
+.gitignore

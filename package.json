@@ -1,0 +1,36 @@
+{
+  "name": "carbonluau-vscode",
+  "displayName": "CarbonLuau",
+  "description": "Development bootstrap for official CarbonLuau editor tooling.",
+  "version": "0.0.1",
+  "private": true,
+  "publisher": "gmoddev",
+  "license": "UNLICENSED",
+  "repository": { "type": "git", "url": "https://github.com/gmoddev/carbonluau-vscode.git" },
+  "engines": { "vscode": "^1.95.0", "node": ">=20.9.0" },
+  "categories": ["Programming Languages"],
+  "extensionKind": ["workspace"],
+  "main": "./dist/Extension.js",
+  "activationEvents": ["onLanguage:luau", "workspaceContains:addon.json"],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": "limited",
+      "description": "%TrustDescription%"
+    },
+    "virtualWorkspaces": { "supported": false, "description": "%VirtualDescription%" }
+  },
+  "contributes": { "languages": [{ "id": "luau", "aliases": ["Luau"], "extensions": [".luau"] }] },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "lint": "eslint .",
+    "check": "npm run build && npm run lint && node --test tests/Bootstrap.test.cjs",
+    "vscode:prepublish": "npm run check"
+  },
+  "devDependencies": {
+    "@types/vscode": "1.95.0",
+    "@eslint/js": "9.39.1",
+    "eslint": "9.39.1",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.46.4"
+  }
+}
