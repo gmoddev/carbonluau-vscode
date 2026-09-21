@@ -133,6 +133,19 @@ Test('ancestor executable configuration blocks launch without evaluating it', { 
   }
 });
 
+Test('normal supervisor shutdown reaps analysis and removes its private snapshot', { skip: !Root }, async () => {
+  const Temp = Fs.mkdtempSync(Path.join(Os.tmpdir(), 'carbonluau-cleanup-'));
+  const Saved = Object.fromEntries(['TEMP', 'TMP', 'TMPDIR'].map(Name => [Name, Process.env[Name]]));
+  try {
+    for (const Name of Object.keys(Saved)) Process.env[Name] = Temp;
+    await Session({ 'init.luau': 'return 1' }, async ({ Analyze }) => Assert.equal((await Analyze()).Value.items.length, 0));
+    Assert.deepEqual(Fs.readdirSync(Temp), []);
+  } finally {
+    for (const [Name, Value] of Object.entries(Saved)) { if (Value === undefined) delete Process.env[Name]; else Process.env[Name] = Value; }
+    Fs.rmSync(Temp, { recursive: true, maxRetries: 10, retryDelay: 100 });
+  }
+});
+
 Test('launcher termination also terminates the contained native child', { skip: !Root || !Process.env.CARBONLUAU_ANALYSIS_FIXTURE || Process.platform === 'darwin', timeout: 10000 }, async () => {
   const Launcher = Path.join(Root, Process.platform === 'win32' ? 'carbonluau-analysis-launcher.exe' : 'carbonluau-analysis-launcher');
   const Child = ChildProcess.spawn(Launcher, [String(Process.pid), Process.env.CARBONLUAU_ANALYSIS_FIXTURE, 'wait'], { windowsHide: true, shell: false, stdio: 'pipe' });

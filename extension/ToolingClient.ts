@@ -58,6 +58,7 @@ export class ToolingClient {
   private NextId = 0;
   private Pending?: { Id: number; Revision?: string; Resolve: (Value: unknown) => void; Reject: (Error: Error) => void; Timer: NodeJS.Timeout };
   private Closed = false;
+  private Stopping?: Promise<void>;
   constructor(Pack: Pack, private readonly Log: (Text: string) => void, private readonly Mode: 'static' | 'analysis' = 'static') {
     const Environment: NodeJS.ProcessEnv = {};
     for (const Name of ['SystemRoot', 'WINDIR', 'TEMP', 'TMP', 'TMPDIR', 'HOME', 'LANG', 'LC_ALL']) if (process.env[Name]) Environment[Name] = process.env[Name];
@@ -105,8 +106,25 @@ export class ToolingClient {
     this.Process.kill(); this.Log(Error.message);
   }
   async Stop(): Promise<void> {
-    if (this.Mode === 'analysis') { this.Process.stdin.end(); this.Fail(new Error('Analysis supervisor stopped.')); return; }
+    if (this.Mode === 'analysis') {
+      this.Stopping ??= this.StopAnalysis();
+      return this.Stopping;
+    }
     try { if (!this.Closed && !this.Pending) await this.Request('shutdown', {}); }
     finally { this.Fail(new Error('Tooling stopped.')); }
+  }
+  private async StopAnalysis(): Promise<void> {
+    this.Closed = true;
+    if (this.Pending) { clearTimeout(this.Pending.Timer); this.Pending.Reject(new Error('Analysis supervisor stopped.')); this.Pending = undefined; }
+    if (this.Process.exitCode !== null || this.Process.signalCode !== null) return;
+    // EOF is handled on the supervisor's independent reader. It kills/reaps
+    // the LSP before removing the snapshot, even with an outstanding request.
+    await new Promise<void>((Resolve, Reject) => {
+      const Exit = (): void => { clearTimeout(Force); clearTimeout(Deadline); Resolve(); };
+      const Force = setTimeout(() => { this.Process.kill(); }, 5000);
+      const Deadline = setTimeout(() => { this.Process.removeListener('exit', Exit); Reject(new Error('Analysis supervisor did not terminate.')); }, 7000);
+      this.Process.once('exit', Exit);
+      this.Process.stdin.end();
+    });
   }
 }

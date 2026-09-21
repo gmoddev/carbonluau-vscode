@@ -76,8 +76,9 @@ terminates the trusted analysis processes.
 
 Process supervision and Luau VM restrictions are **not an OS filesystem/network
 sandbox**. Native processes retain the user's OS authority if compromised.
-macOS x64/arm64 remains static-only: no macOS execution runner was available, and
-language analysis is deliberately disabled even when the workspace is trusted.
+macOS x64/arm64 remains static-only: hosted arm64 build/static-host checks pass,
+but executable language analysis is unqualified and deliberately disabled even
+when the workspace is trusted. macOS x64 has no execution evidence.
 
 Once provisioned, editor operation is offline: no telemetry, HTTP listener,
 remote API, server connection or automatic tooling download. Standard VS Code
