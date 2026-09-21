@@ -1,41 +1,43 @@
 # Architecture routing
 
-The canonical owner is CarbonLuau D19. This repository must not duplicate its
-package parser, module visibility, GUI geometry, clipping or resource accounting.
-
-- [Contributor entry](https://github.com/gmoddev/CarbonLuau/blob/33f9c75c62759cc093e06477b25b2fe05f0f03e5/AICONTEXT.md)
-- [Tooling baseline](https://github.com/gmoddev/CarbonLuau/blob/33f9c75c62759cc093e06477b25b2fe05f0f03e5/docs/ToolingBaseline.md)
-- [Contract models](https://github.com/gmoddev/CarbonLuau/blob/33f9c75c62759cc093e06477b25b2fe05f0f03e5/docs/ToolingContracts.md)
-- [Foundation A plan and phase routing](https://github.com/gmoddev/CarbonLuau/blob/33f9c75c62759cc093e06477b25b2fe05f0f03e5/docs/ToolingFoundationA.md)
-
-Links pin the isolated adoption commit while another task works on runtime main;
-follow canonical main after that change is integrated. No semantic source is
-copied here. `extension/Extension.ts` is the only runtime entry in this bootstrap.
+CarbonLuau D19 owns tooling semantics and security. `tooling-source.json` pins the
+canonical implementation used by CI; read that revision's `AICONTEXT.md`,
+`docs/ToolingBaseline.md`, `docs/ToolingContracts.md`,
+`docs/ToolingFoundationA.md` and `docs/ToolingFoundationACompletion.md`.
+This repository contains editor integration, not a second package/module parser.
 
 ## Language-analysis security amendment
 
-The canonical [D19 decision](https://github.com/gmoddev/CarbonLuau/blob/9c33a98ee123238ee073a819a4938827596e5b25/docs/ToolingLanguageAnalysisSecurity.md)
-resolves the partial Foundation A implementation's workspace-code execution
-blocker. [Windows/Linux investigation evidence](https://github.com/gmoddev/CarbonLuau/blob/9c33a98ee123238ee073a819a4938827596e5b25/docs/ToolingLanguageAnalysisSecurityEvidence.md)
-distinguishes configuration evaluation, restricted type-function evaluation and
-pack-owned plugin execution. Use this amendment with the baseline links above;
-it supersedes the assumption that all language analysis is non-executing.
+The accepted [D19 decision](https://github.com/gmoddev/CarbonLuau/blob/9c33a98ee123238ee073a819a4938827596e5b25/docs/ToolingLanguageAnalysisSecurity.md)
+and [upstream investigation](https://github.com/gmoddev/CarbonLuau/blob/9c33a98ee123238ee073a819a4938827596e5b25/docs/ToolingLanguageAnalysisSecurityEvidence.md)
+distinguish parse-only checks, executable configuration, restricted type
+functions and pack-owned transforms. They remain authoritative.
 
-Restricted Mode retains parse-only syntax, packaged API information and canonical
-project/package/path diagnostics. It never starts luau-lsp. After Workspace Trust,
-a qualified tooling supervisor may start the pinned LSP over bounded snapshots,
-with type functions intact, owned JSON configuration and the verified require
-adapter. Workspace `.config.luau`, `.luaurc`, `.robloxrc`, arbitrary LSP settings
-and custom plugins are excluded in both modes. Trust cannot select executable
-paths or relax limits. Nothing executes workspace Luau in the extension host.
+Foundation A uses two separate tooling host instances. Static `--stdio` handles
+metadata and bounded canonical project validation. Trusted `--analysis-stdio`
+materializes the immutable snapshot, generates the owned transform and supervises
+luau-lsp through the native launch boundary. The extension sends only bounded
+logical snapshots and allowlisted language operations. It never runs a Luau VM.
 
-The selected profile provides process/resource supervision and VM restrictions;
-it does not claim a portable OS filesystem/network sandbox. The amendment owns
-exact deadlines, memory limits versus soft monitoring, snapshot ancestry checks,
-trust transitions, protocol/URI filtering, recovery and platform qualification.
+Workspace configuration and plugin selection cannot enter either launcher.
+The supervisor verifies policy/profile, platform, payload hashes and exact pins;
+the extension independently checks compatibility before enabling language
+providers. Static functionality remains available when language qualification
+is absent. Both sides reject stale revisions. Language output has bounded
+frames/depth/queues, source-checked ranges, mapped admitted URIs and no commands,
+external links, workspace edits or dynamic registration.
 
-Architecture verdict: **READY TO RESUME TOOLING FOUNDATION A**. Implementation
-verdict remains partial/unqualified. The isolated `carbonluau-vscode-a` worktree
-contains the uncommitted implementation; preserve its unconditional LSP block
-until the replacement controls pass. This branch changes documentation only,
-does not enable analysis and does not begin Foundation B or publication.
+Windows uses a Job assigned before the child resumes: 1 GiB process commit,
+one active process, no breakaway, kill on last job handle close. Linux installs
+2 GiB address-space limits before exec and monitors 1 GiB RSS every 50 ms;
+the child has an owned process group and parent-loss handling. Requests expire
+after 15 seconds (initialization 30), plugin execution after 1 second, and type
+functions have a 64 MiB VM heap limit. macOS remains static-only and unqualified.
+No portable OS filesystem or network isolation is claimed.
+
+The original isolated partial implementation's unconditional launch block is
+replaced only for the Windows/Linux qualified profile. Require transformation
+now lives in canonical C# tooling, revision 2, using exact source guards and
+fully escaped literals. Runtime require semantics are unchanged. Foundation B
+receives reusable Core, protocol, metadata, definitions and client services;
+its preview worker, VM and plan generation are not implemented by Foundation A.

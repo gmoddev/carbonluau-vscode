@@ -1,4 +1,4 @@
 {
-  "TrustDescription": "This bootstrap executes no workspace code. Future preview, build and task execution require Workspace Trust.",
+  "TrustDescription": "Restricted Mode provides static CarbonLuau checks. Trusted workspaces additionally allow supervised Luau type-function analysis; workspace executable configuration remains excluded.",
   "VirtualDescription": "CarbonLuau tooling requires a filesystem workspace on a supported desktop or remote extension host."
 }

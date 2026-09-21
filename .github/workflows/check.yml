@@ -1,10 +1,11 @@
-name: Bootstrap checks
+name: Tooling Foundation A
 on: [push, pull_request, workflow_dispatch]
 permissions:
   contents: read
 jobs:
   check:
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
@@ -14,5 +15,45 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Read canonical tooling source pin
+        id: source
+        shell: pwsh
+        run: |
+          $Source = Get-Content -Raw tooling-source.json | ConvertFrom-Json
+          "revision=$($Source.Revision)" >> $env:GITHUB_OUTPUT
+      - uses: actions/checkout@v4
+        with:
+          repository: gmoddev/CarbonLuau
+          ref: ${{ steps.source.outputs.revision }}
+          path: build/canonical
       - run: npm ci --ignore-scripts
+      - name: Build and qualify canonical tooling pack
+        shell: pwsh
+        run: |
+          ./build/canonical/tools/Build-Tooling.ps1 -Extension $pwd -OutputDirectory "$pwd/build/tooling"
+          $Architecture = [Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture.ToString().ToLowerInvariant()
+          $Platform = if ($IsWindows) { "win32-$Architecture" } elseif ($IsLinux) { "linux-$Architecture" } else { "darwin-$Architecture" }
+          if (!$IsMacOS) {
+            "CARBONLUAU_ANALYSIS_PACK=$pwd/tooling/$Platform" >> $env:GITHUB_ENV
+            $Fixture = if ($IsWindows) { "$pwd/build/tooling/native/Release/carbonluau-analysis-fixture.exe" } else { "$pwd/build/tooling/native/carbonluau-analysis-fixture" }
+            "CARBONLUAU_ANALYSIS_FIXTURE=$Fixture" >> $env:GITHUB_ENV
+          }
       - run: npm run check
+      - name: Actual VS Code trust and language integration (Linux)
+        if: runner.os == 'Linux'
+        run: xvfb-run -a npm run test:e2e
+      - name: Actual VS Code trust and language integration (Windows)
+        if: runner.os == 'Windows'
+        run: npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: vscode-e2e-${{ matrix.os }}
+          path: build/e2e-*/*.log
+          if-no-files-found: ignore

@@ -1,34 +1,101 @@
 {
   "name": "carbonluau-vscode",
   "displayName": "CarbonLuau",
-  "description": "Development bootstrap for official CarbonLuau editor tooling.",
+  "description": "Official CarbonLuau language and project tooling (Foundation A development).",
   "version": "0.0.1",
   "private": true,
   "publisher": "gmoddev",
   "license": "UNLICENSED",
-  "repository": { "type": "git", "url": "https://github.com/gmoddev/carbonluau-vscode.git" },
-  "engines": { "vscode": "^1.95.0", "node": ">=20.9.0" },
-  "categories": ["Programming Languages"],
-  "extensionKind": ["workspace"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gmoddev/carbonluau-vscode.git"
+  },
+  "engines": {
+    "vscode": "^1.95.0",
+    "node": ">=22"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "extensionKind": [
+    "workspace"
+  ],
   "main": "./dist/Extension.js",
-  "activationEvents": ["onLanguage:luau", "workspaceContains:addon.json"],
+  "activationEvents": [
+    "onLanguage:luau",
+    "workspaceContains:addon.json"
+  ],
   "capabilities": {
     "untrustedWorkspaces": {
       "supported": "limited",
       "description": "%TrustDescription%"
     },
-    "virtualWorkspaces": { "supported": false, "description": "%VirtualDescription%" }
+    "virtualWorkspaces": {
+      "supported": false,
+      "description": "%VirtualDescription%"
+    }
   },
-  "contributes": { "languages": [{ "id": "luau", "aliases": ["Luau"], "extensions": [".luau"] }] },
+  "contributes": {
+    "languages": [
+      {
+        "id": "luau",
+        "aliases": [
+          "Luau"
+        ],
+        "extensions": [
+          ".luau"
+        ]
+      }
+    ],
+    "grammars": [
+      {
+        "language": "luau",
+        "scopeName": "source.luau",
+        "path": "./syntaxes/luau.tmLanguage.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "carbonLuau.validateProject",
+        "title": "CarbonLuau: Validate Project"
+      },
+      {
+        "command": "carbonLuau.selectScriptingApi",
+        "title": "CarbonLuau: Select Scripting API"
+      },
+      {
+        "command": "carbonLuau.restartTooling",
+        "title": "CarbonLuau: Restart Tooling"
+      },
+      {
+        "command": "carbonLuau.showOutput",
+        "title": "CarbonLuau: Show Output"
+      }
+    ],
+    "configuration": {
+      "title": "CarbonLuau",
+      "properties": {
+        "carbonLuau.apiVersion": {
+          "type": "string",
+          "default": "",
+          "scope": "window",
+          "description": "Exact scripting API. Empty selects the locally provisioned tooling pack API."
+        }
+      }
+    }
+  },
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "lint": "eslint .",
-    "check": "npm run build && npm run lint && node --test tests/Bootstrap.test.cjs",
+    "check": "npm run build && npm run lint && node tests/RunUnit.cjs",
+    "test:e2e": "node tests/e2e/Run.cjs",
     "vscode:prepublish": "npm run check"
   },
   "devDependencies": {
-    "@types/vscode": "1.95.0",
     "@eslint/js": "9.39.1",
+    "@types/node": "22.20.4",
+    "@types/vscode": "1.95.0",
+    "@vscode/test-electron": "3.1.0",
     "eslint": "9.39.1",
     "typescript": "5.9.3",
     "typescript-eslint": "8.46.4"

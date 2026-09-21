@@ -9,7 +9,7 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "forceConsistentCasingInFileNames": true,
-    "types": ["vscode"],
+    "types": ["vscode", "node"],
     "skipLibCheck": false
   },
   "include": ["extension/**/*.ts"]

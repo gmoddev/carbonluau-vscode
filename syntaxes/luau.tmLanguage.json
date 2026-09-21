@@ -1,0 +1,15 @@
+{
+  "name": "Luau",
+  "scopeName": "source.luau",
+  "patterns": [
+    { "name": "comment.block.luau", "begin": "--\\[(=*)\\[", "end": "\\]\\1\\]" },
+    { "name": "comment.line.double-dash.luau", "match": "--.*$" },
+    { "name": "string.quoted.double.luau", "begin": "\"", "end": "\"", "patterns": [{ "name": "constant.character.escape.luau", "match": "\\\\." }] },
+    { "name": "string.quoted.single.luau", "begin": "'", "end": "'", "patterns": [{ "name": "constant.character.escape.luau", "match": "\\\\." }] },
+    { "name": "string.quoted.other.luau", "begin": "\\[(=*)\\[", "end": "\\]\\1\\]" },
+    { "name": "keyword.control.luau", "match": "\\b(and|break|continue|do|else|elseif|end|export|for|function|if|in|local|not|or|repeat|return|then|type|until|while)\\b" },
+    { "name": "constant.language.luau", "match": "\\b(true|false|nil)\\b" },
+    { "name": "constant.numeric.luau", "match": "\\b(0[xX][0-9A-Fa-f_]+|0[bB][01_]+|[0-9][0-9_]*(\\.[0-9_]*)?([eE][+-]?[0-9_]+)?)\\b" },
+    { "name": "support.type.luau", "match": "\\b(number|string|boolean|thread|buffer|unknown|never|any)\\b" }
+  ]
+}

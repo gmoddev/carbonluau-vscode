@@ -1,33 +1,86 @@
 # CarbonLuau for VS Code
 
-Development bootstrap for the official CarbonLuau editor integration. This is not
-a usable language server, validator or GUI preview release. It registers `.luau`
-and an inert lifecycle entry point; no workspace code or host process executes.
+Foundation A development integration: Luau syntax, canonical CarbonLuau API
+information, project/package diagnostics and trusted language analysis. This is
+an unpublished development extension; no VSIX or Marketplace release is provided.
+Runtime semantics and metadata belong to [CarbonLuau](https://github.com/gmoddev/CarbonLuau).
 
-Canonical package/module/API/GUI semantics belong to
-[gmoddev/CarbonLuau](https://github.com/gmoddev/CarbonLuau). Start with
-[architecture routing](docs/Architecture.md) for the accepted baseline and phase plan.
+## Develop and run
 
-The [language-analysis security decision](docs/Architecture.md#language-analysis-security-amendment)
-now defines the Foundation A handoff: safe static features in Restricted Mode,
-trusted-only supervised LSP analysis over snapshots, and no workspace executable
-configuration/custom plugins. This documentation branch does not implement or
-enable that profile; the partial Foundation A implementation remains isolated
-and unqualified. Process separation is not a portable OS sandbox claim.
+Use Node.js 22, .NET SDK 10, Python 3, CMake and a C++17 compiler. Check out the
+CarbonLuau revision recorded in `tooling-source.json` beside this repository.
+From PowerShell 7 in this repository:
 
-Use Node.js 22 LTS (Node 20.9+ satisfies the current compiler/linter requirements):
-
-```text
-npm ci
+```powershell
+npm ci --ignore-scripts
+../CarbonLuau/tools/Build-Tooling.ps1 -Extension $pwd
 npm run check
+code --extensionDevelopmentPath="$pwd" /path/to/project
 ```
 
-Checks compile TypeScript, lint, validate the bootstrap manifest contract and invoke
-activation/deactivation without host capabilities in both trust modes. These are
-bootstrap checks, not VS Code E2E or platform tooling qualification.
+The explicit pack build downloads a SHA-256-pinned luau-lsp archive unless
+`-LanguageServerArchive` supplies an existing copy. It builds the static parser,
+self-contained tooling host and analysis launcher into `tooling/<platform>`.
+No server assemblies are required. Build each pack on its target platform.
+Pack payload hashes detect corruption; local development packs are not signed
+distribution attestations. Run `npm run test:e2e` on a dedicated desktop runner
+(Linux: `xvfb-run -a npm run test:e2e`). Tests manipulate their own VS Code trust
+profile. See [architecture and qualification routing](docs/Architecture.md).
 
-No telemetry, no server dependency, no bundled tooling pack yet. Reserved commands
-and settings are documented canonically and will appear only with working backends.
-`gmoddev` in the extension manifest is the intended publisher namespace, not proof
-of Marketplace/Open VSX registration. Publishing, licensing of a future release,
-and platform qualification are Foundation E gates. No VSIX is produced here.
+## Projects and diagnostics
+
+Open a standalone/root Luau folder, an addon folder containing `addon.json`, or a
+multi-folder workspace. Nested addon projects and `.claddon` package validation
+are supported. Unsaved Luau buffers are included in bounded snapshots. Loose
+files outside workspace folders receive static support only. No new project file
+is required.
+
+Problems reports canonical manifest/schema/API, package ID/version, path, main,
+public-module, dependency and source/module-limit errors. Declared dependencies
+resolve by exact package ID to sibling workspace addons; undeclared/private
+modules stay inaccessible. `require("local/module")`, `require("@addon")` and
+`require("@addon/public/module")` use the runtime's shared legality rules. This is
+development analysis, with no registry, downloading or version solver.
+
+The installed `0.4.0-experimental` API includes current Player/inventory, GUI,
+Signals, value types and enums. Reference hovers work in static mode; trusted
+mode adds type diagnostics, inferred hover, completion, signatures and source
+navigation. Reference hovers identify themselves as canonical API information,
+not expression type inference. Unsupported API/schema identities fail explicitly.
+
+Commands: **Validate Project**, **Select Scripting API**, **Restart Tooling**, and
+**Show Output**, all under **CarbonLuau** in the Command Palette. Only installed
+offline API targets can be selected.
+
+## Workspace Trust
+
+Restricted Mode keeps syntax, API information and project/package diagnostics.
+It never starts luau-lsp or evaluates type functions. The status bar explains
+that richer analysis requires Workspace Trust, without repeated notifications.
+
+Trust automatically enables supervised analysis on qualified Windows x64 and
+Linux x64 packs. Type functions may execute in luau-lsp's restricted Luau VM,
+outside VS Code's extension host, with heap and external process/deadline limits.
+Workspace `.config.luau`, `.luaurc`, `.robloxrc`, LSP settings and custom plugins
+are excluded in both modes. CarbonLuau uses its own pinned configuration and
+require adapter. Ordinary project configuration interoperability is consequently
+limited; configuration cannot relax the analysis policy.
+
+Analysis uses a private bounded snapshot, not workspace paths. Dynamic/aliased or
+invalid requires, syntax errors, invalid packages and their dependent sources
+are withheld from executable analysis; static diagnostics remain available.
+An unexpected crash gets one restart per five minutes. Timeout, resource or
+protocol failure requires **Restart Tooling**; editing does not replay failed
+analysis automatically. Revoking trust follows VS Code's reload behavior and
+terminates the trusted analysis processes.
+
+Process supervision and Luau VM restrictions are **not an OS filesystem/network
+sandbox**. Native processes retain the user's OS authority if compromised.
+macOS x64/arm64 remains static-only: no macOS execution runner was available, and
+language analysis is deliberately disabled even when the workspace is trusted.
+
+Once provisioned, editor operation is offline: no telemetry, HTTP listener,
+remote API, server connection or automatic tooling download. Standard VS Code
+services have their own settings. Foundation B will add the separately bounded
+preview worker and `ToolingPreviewPlan`; no preview, WebView, mocks, debugger or
+live server integration exists here.
