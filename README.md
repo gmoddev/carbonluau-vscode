@@ -82,6 +82,6 @@ when the workspace is trusted. macOS x64 has no execution evidence.
 
 Once provisioned, editor operation is offline: no telemetry, HTTP listener,
 remote API, server connection or automatic tooling download. Standard VS Code
-services have their own settings. Foundation B will add the separately bounded
-preview worker and `ToolingPreviewPlan`; no preview, WebView, mocks, debugger or
-live server integration exists here.
+services have their own settings. Foundation B adds an internal, trust-gated
+preview request/plan-storage seam for Foundation C. It has no visual preview
+command or WebView. No mocks, debugger or live server integration exists here.

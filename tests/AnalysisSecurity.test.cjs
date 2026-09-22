@@ -10,7 +10,7 @@ const ChildProcess = require('node:child_process');
 const { setTimeout } = require('node:timers');
 const Root = Process.env.CARBONLUAU_ANALYSIS_PACK;
 const Pack = Root && { Root, Host: Path.join(Root, Process.platform === 'win32' ? 'carbonluau-tooling.exe' : 'carbonluau-tooling'),
-  ApiVersion: '0.4.0-experimental', PackVersion: 'foundation-a-development' };
+  ApiVersion: '0.4.0-experimental', PackVersion: 'foundation-b-development' };
 
 function Snapshot(Files) { return { Folders: [{ Id: '0', Files: Object.entries(Files).map(([Path, Text]) => ({ Path, Text })) }] }; }
 async function Session(Files, Work) {

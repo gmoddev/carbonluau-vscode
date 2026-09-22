@@ -59,7 +59,7 @@ export class ToolingClient {
   private Pending?: { Id: number; Revision?: string; Resolve: (Value: unknown) => void; Reject: (Error: Error) => void; Timer: NodeJS.Timeout };
   private Closed = false;
   private Stopping?: Promise<void>;
-  constructor(Pack: Pack, private readonly Log: (Text: string) => void, private readonly Mode: 'static' | 'analysis' = 'static') {
+  constructor(Pack: Pack, private readonly Log: (Text: string) => void, private readonly Mode: 'static' | 'analysis' | 'preview' = 'static') {
     const Environment: NodeJS.ProcessEnv = {};
     for (const Name of ['SystemRoot', 'WINDIR', 'TEMP', 'TMP', 'TMPDIR', 'HOME', 'LANG', 'LC_ALL']) if (process.env[Name]) Environment[Name] = process.env[Name];
     this.Process = Spawn(Pack.Host, [Mode === 'analysis' ? '--analysis-stdio' : '--stdio'], { cwd: Pack.Root, windowsHide: true, shell: false, stdio: 'pipe', env: Environment });
@@ -84,19 +84,19 @@ export class ToolingClient {
     const Body = Buffer.from(JSON.stringify({ Protocol, Id, Method, Params, ...(ProjectRevision ? { ProjectRevision } : {}) }));
     if (Body.length > MaxFrame || Id > 2147483647) return Promise.reject(new Error('Tooling request exceeds its bound.'));
     return new Promise((Resolve, Reject) => {
-      const Timer = setTimeout(() => this.Fail(new Error('Tooling request timed out.')), this.Mode === 'analysis' ? Method === 'snapshot' ? 35000 : 17000 : 15000);
+      const Timer = setTimeout(() => this.Fail(new Error('Tooling request timed out.')), this.Mode === 'analysis' ? Method === 'snapshot' ? 35000 : 17000 : this.Mode === 'preview' ? 24000 : 15000);
       this.Pending = { Id, Revision: ProjectRevision, Resolve, Reject, Timer };
       this.Process.stdin.write(Buffer.concat([Buffer.from(`Content-Length: ${Body.length}\r\n\r\n`), Body]));
     });
   }
   private Receive(Value: unknown): void {
-    const Response = Value as { Protocol: unknown; Id: number; ProjectRevision?: string; Result?: unknown; Error?: { Message: string } };
+    const Response = Value as { Protocol: unknown; Id: number; ProjectRevision?: string; Result?: unknown; Error?: { Message: string; Details?: unknown } };
     const Pending = this.Pending;
     if (!Pending || Response.Id !== Pending.Id || JSON.stringify(Response.Protocol) !== JSON.stringify(Protocol) ||
         (Response.Error === undefined && Response.ProjectRevision !== Pending.Revision) ||
         (Object.hasOwn(Response, 'Result') === Object.hasOwn(Response, 'Error'))) throw new Error('Tooling response identity mismatch.');
     clearTimeout(Pending.Timer); this.Pending = undefined;
-    if (Response.Error) Pending.Reject(Object.assign(new Error(String(Response.Error.Message).slice(0, 1024)), { Code: (Response.Error as { Code?: string }).Code }));
+    if (Response.Error) Pending.Reject(Object.assign(new Error(String(Response.Error.Message).slice(0, 1024)), { Code: (Response.Error as { Code?: string }).Code, Details: Response.Error.Details }));
     else Pending.Resolve(Response.Result);
   }
   private Fail(Error: Error): void {
@@ -106,23 +106,23 @@ export class ToolingClient {
     this.Process.kill(); this.Log(Error.message);
   }
   async Stop(): Promise<void> {
-    if (this.Mode === 'analysis') {
-      this.Stopping ??= this.StopAnalysis();
+    if (this.Mode === 'analysis' || this.Mode === 'preview') {
+      this.Stopping ??= this.StopSupervisor();
       return this.Stopping;
     }
     try { if (!this.Closed && !this.Pending) await this.Request('shutdown', {}); }
     finally { this.Fail(new Error('Tooling stopped.')); }
   }
-  private async StopAnalysis(): Promise<void> {
+  private async StopSupervisor(): Promise<void> {
     this.Closed = true;
-    if (this.Pending) { clearTimeout(this.Pending.Timer); this.Pending.Reject(new Error('Analysis supervisor stopped.')); this.Pending = undefined; }
+    if (this.Pending) { clearTimeout(this.Pending.Timer); this.Pending.Reject(new Error('Tooling supervisor stopped.')); this.Pending = undefined; }
     if (this.Process.exitCode !== null || this.Process.signalCode !== null) return;
     // EOF is handled on the supervisor's independent reader. It kills/reaps
-    // the LSP before removing the snapshot, even with an outstanding request.
+    // its worker before removing analysis state, even with an outstanding request.
     await new Promise<void>((Resolve, Reject) => {
       const Exit = (): void => { clearTimeout(Force); clearTimeout(Deadline); Resolve(); };
       const Force = setTimeout(() => { this.Process.kill(); }, 5000);
-      const Deadline = setTimeout(() => { this.Process.removeListener('exit', Exit); Reject(new Error('Analysis supervisor did not terminate.')); }, 7000);
+      const Deadline = setTimeout(() => { this.Process.removeListener('exit', Exit); Reject(new Error('Tooling supervisor did not terminate.')); }, 7000);
       this.Process.once('exit', Exit);
       this.Process.stdin.end();
     });

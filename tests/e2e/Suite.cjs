@@ -28,11 +28,14 @@ exports.run = async () => {
   await Vscode.commands.executeCommand('carbonLuau.validateProject');
   if (Mode === 'revoke') {
     Assert.equal(Vscode.workspace.isTrusted, false);
+    await Assert.rejects(Extension.exports.RequestPreview({ProjectId: '0/', Viewport: {Width: 1280, Height: 720}}), /trusted workspace/);
+    Assert.equal(Extension.exports.GetPreviewState().Plan, undefined);
     if (AnalysisProcesses()) Assert.equal(AnalysisProcesses().length, 0);
     Stage('complete'); return;
   }
   if (Mode === 'restricted') {
     Assert.equal(Vscode.workspace.isTrusted, false);
+    await Assert.rejects(Extension.exports.RequestPreview({ProjectId: '0/', Viewport: {Width: 1280, Height: 720}}), /trusted workspace/);
     if (AnalysisProcesses()) Assert.equal(AnalysisProcesses().length, 0);
     const Hovers = await Vscode.commands.executeCommand('vscode.executeHoverProvider', Document.uri, new Vscode.Position(2, 9));
     Assert.ok(Hovers.some(Hover => Hover.contents.some(Content => Content.value?.includes('GiveItem') && /Canonical.*CarbonLuau/.test(Content.value))));
@@ -62,7 +65,24 @@ exports.run = async () => {
     const Edit = new Vscode.WorkspaceEdit();
     Edit.replace(Document.uri, new Vscode.Range(Document.positionAt(0), Document.positionAt(Document.getText().length)), Text);
     Assert.equal(await Vscode.workspace.applyEdit(Edit), true); await Document.save();
+    // Let asynchronous filesystem save notifications reach the invalidation
+    // handler before testing a preview of a stable source revision.
+    await Delay(500);
   };
+  const GuiSource = 'local Screen = game:GetService("Gui"):Create("ScreenGui")\nScreen:Create("Frame").Size = UDim2.fromScale(0.5, 0.5)';
+  const Selection = {ProjectId: '0/', Viewport: {Width: 1280, Height: 720}};
+  await Replace(GuiSource); await Vscode.commands.executeCommand('carbonLuau.validateProject');
+  const Preview = await Extension.exports.RequestPreview(Selection);
+  Assert.equal(Preview.Nodes[1].Projected.RectPx.Width, 640);
+  await Replace('while true do end'); await Vscode.commands.executeCommand('carbonLuau.validateProject');
+  Assert.equal(Extension.exports.GetPreviewState().Plan, undefined);
+  const PreviewFailure = Extension.exports.RequestPreview(Selection).then(() => {throw new Error('Infinite preview succeeded');}, Error => Error);
+  const Responsive = Date.now(); await Vscode.commands.getCommands(); await Delay(50);
+  Assert.ok(Date.now() - Responsive < 1000, 'Extension host became unresponsive during preview.');
+  Assert.ok(await PreviewFailure);
+  Assert.equal(Extension.exports.GetPreviewState().Plan, undefined);
+  await Replace(GuiSource); await Vscode.commands.executeCommand('carbonLuau.validateProject');
+  Assert.equal((await Extension.exports.RequestPreview(Selection)).Nodes.length, 2);
   await Replace('type function Loop() while true do end return types.number end\nlocal X: Loop<> = 1\nreturn X');
   await Vscode.commands.executeCommand('carbonLuau.validateProject');
   const Start = Date.now();

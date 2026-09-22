@@ -1,4 +1,4 @@
-name: Tooling Foundation A
+name: Tooling Foundations A and B
 on: [push, pull_request, workflow_dispatch]
 permissions:
   contents: read

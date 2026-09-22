@@ -41,3 +41,21 @@ now lives in canonical C# tooling, revision 2, using exact source guards and
 fully escaped literals. Runtime require semantics are unchanged. Foundation B
 receives reusable Core, protocol, metadata, definitions and client services;
 its preview worker, VM and plan generation are not implemented by Foundation A.
+
+## Foundation B internal preview seam
+
+Foundation B adds `extension/Preview.ts` and the extension exports
+`RequestPreview(Selection)` / `GetPreviewState()` for Foundation C. It captures
+the existing logical project snapshot, requires trust and a qualified pack,
+requests canonical preview execution over stdio, validates exact plan identity,
+and stores a copied plan. Source/API/folder changes and trust/reload clear plans
+and end the dedicated coordinator session. No workspace code or GUI layout runs
+in JavaScript. Errors clear the old plan; an unreaped process requires Restart
+Tooling. No visual command, WebView or mocks are added.
+
+Windows/Linux preview limits are separate from LSP limits: a fresh worker,
+1-second execution wall deadline, 64 MiB Luau heap and 256 MiB process profile.
+Linux RSS is a sampled watchdog alongside hard DATA limits; neither platform
+claims a filesystem/network OS sandbox. macOS remains static-only. See the
+selected canonical revision's `docs/ToolingFoundationB.md` and
+`tooling/preview-plan.schema.json` for all semantics and qualification.

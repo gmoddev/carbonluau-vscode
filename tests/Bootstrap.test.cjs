@@ -31,7 +31,7 @@ for (const Trusted of [false, true]) {
     const Disposable = { dispose() {} };
     const Event = () => Disposable;
     const Uri = { fsPath: '/safe/main.luau', path: '/safe/main.luau', toString: () => 'file:///safe/main.luau' };
-    const Pack = { ApiVersion: '0.4.0-experimental', PackVersion: 'foundation-a-development', Platform: 'win32-x64', LanguageServerQualified: false };
+    const Pack = { ApiVersion: '0.4.0-experimental', PackVersion: 'foundation-b-development', Platform: 'win32-x64', LanguageServerQualified: false };
     let Api = '', Failure = false;
     const Vscode = {
       window: {
@@ -70,6 +70,7 @@ for (const Trusted of [false, true]) {
       './Snapshot': { SourceKey: (Folder, Path) => Folder + '\0' + Path, Capture: async () => ({ Params: { Folders: [] }, Uris: new Map([['0\0main.luau', Uri]]), Sources: new Map() }) },
       './AnalysisAdapter': { BuildTransform: () => '-- trusted empty adapter' },
       './Metadata': { RegisterMetadata: () => Disposable },
+      './Preview': { Preview: class { constructor() { throw new Error('Preview must never start on activation'); } } },
       './Language': { Language: class { constructor() { throw new Error('Unqualified language server must never start'); } } }
     };
     const Context = Vm.createContext({ exports: Exports, Buffer, setTimeout: () => 1, clearTimeout: () => {}, require: Name => {

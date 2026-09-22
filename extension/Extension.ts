@@ -4,6 +4,7 @@ import { ToolingClient, Revision } from './ToolingClient';
 import { Capture, Snapshot, SourceKey } from './Snapshot';
 import { Language } from './Language';
 import { RegisterMetadata } from './Metadata';
+import { Preview, PreviewSelection, PreviewState, ToolingPreviewPlan } from './Preview';
 
 interface SourceDiagnostic { Folder: string; Path: string; Code: string; Message: string; Severity: string; Line: number; Column: number; EndLine: number; EndColumn: number }
 interface Inspection { Diagnostics: SourceDiagnostic[]; Imports: unknown[]; Projects: { Kind: string; PackageId?: string }[] }
@@ -17,6 +18,7 @@ class ProjectManager {
   private Language?: Language;
   private Pack?: Pack;
   private Metadata?: Vscode.Disposable;
+  private Preview?: Preview;
   private SelectedApi = '';
   private Generation = 0;
   private Running?: Promise<void>;
@@ -32,6 +34,7 @@ class ProjectManager {
   Schedule(): void {
     if (this.Stopped) return;
     ++this.Generation; this.Pending = true; this.Diagnostics.clear(); this.Language?.Invalidate();
+    this.Preview?.Invalidate();
     if (!Vscode.workspace.isTrusted) void this.Language?.Stop();
     if (this.Timer) clearTimeout(this.Timer);
     this.Timer = setTimeout(() => { void this.Validate(); }, 250);
@@ -113,6 +116,7 @@ class ProjectManager {
   }
   async Restart(): Promise<void> {
     ++this.Generation; this.Pending = false;
+    await this.Preview?.Stop(); this.Preview = undefined;
     await this.Language?.Stop(); this.Language?.dispose(); this.Language = undefined;
     await this.Host?.Stop(); this.Host = undefined;
     if (this.Running) await this.Running;
@@ -120,15 +124,28 @@ class ProjectManager {
   }
   async Stop(): Promise<void> {
     this.Stopped = true; ++this.Generation; this.Pending = false;
+    await this.Preview?.Stop(); this.Preview = undefined;
     if (this.Timer) clearTimeout(this.Timer);
     await this.Language?.Stop(); this.Language?.dispose(); this.Language = undefined;
     await this.Host?.Stop();
     this.Metadata?.dispose(); this.Metadata = undefined;
     if (this.Running) await this.Running;
   }
+  async RequestPreview(Selection: PreviewSelection): Promise<ToolingPreviewPlan> {
+    if (this.Stopped || !Vscode.workspace.isTrusted || !Vscode.workspace.workspaceFolders?.length) throw new Error('GUI preview requires an active trusted workspace.');
+    const Generation = this.Generation;
+    const Pack = this.Pack ?? await LoadPack(this.Context.extensionPath);
+    const Api = Vscode.workspace.getConfiguration('carbonLuau').get<string>('apiVersion') || this.Context.workspaceState.get<string>('SelectedApi') || Pack.ApiVersion;
+    if (Api !== Pack.ApiVersion) throw new Error('Selected scripting API is incompatible with the preview tooling pack.');
+    const Snapshot = await Capture();
+    if (this.Stopped || Generation !== this.Generation || !Vscode.workspace.isTrusted) throw new Error('Preview source or trust changed during capture.');
+    this.Preview ??= new Preview(Pack, () => Vscode.workspace.isTrusted && !this.Stopped, Message => this.Log(Message));
+    return this.Preview.Request(Snapshot.Params, Selection);
+  }
+  GetPreviewState(): PreviewState { return this.Preview?.GetState() ?? { Running: false }; }
 }
 
-export function activate(Context: Vscode.ExtensionContext): void {
+export function activate(Context: Vscode.ExtensionContext): { RequestPreview: (Selection: PreviewSelection) => Promise<ToolingPreviewPlan>; GetPreviewState: () => PreviewState } {
   Manager = new ProjectManager(Context);
   const Current = Manager;
   for (const [Name, Handler] of [
@@ -143,5 +160,6 @@ export function activate(Context: Vscode.ExtensionContext): void {
     Vscode.workspace.onDidChangeTextDocument(Event => { if (Event.document.languageId === 'luau' || Event.document.uri.path.endsWith('/addon.json')) Current.Schedule(); }),
     Vscode.workspace.onDidChangeConfiguration(Event => { if (Event.affectsConfiguration('carbonLuau.apiVersion')) void Current.Restart(); }));
   Current.Schedule();
+  return { RequestPreview: Selection => Current.RequestPreview(Selection), GetPreviewState: () => Current.GetPreviewState() };
 }
 export async function deactivate(): Promise<void> { await Manager?.Stop(); Manager = undefined; }
