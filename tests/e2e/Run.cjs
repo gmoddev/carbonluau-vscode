@@ -2,7 +2,7 @@
 const Fs = require('node:fs');
 const Path = require('node:path');
 const Process = require('node:process');
-const { spawn: Spawn } = require('node:child_process');
+const { spawn: Spawn, spawnSync: SpawnSync } = require('node:child_process');
 const { setTimeout: Delay } = require('node:timers/promises');
 const { downloadAndUnzipVSCode: Download } = require('@vscode/test-electron');
 const Panel = require('./Panel.cjs');
@@ -13,6 +13,7 @@ const Profile = Path.join(Work, 'profile');
 const Workspace = Path.join(Work, 'workspace');
 const Marker = Path.join(Work, 'phase.json');
 const Harness = Path.join(Work, 'harness');
+const Vsix = Process.env.CARBONLUAU_E2E_VSIX;
 
 async function ClickTrust(Label) {
   const Targets = await (await globalThis.fetch('http://127.0.0.1:9237/json')).json();
@@ -31,8 +32,8 @@ async function Run(Mode, Executable) {
   Fs.writeFileSync(Marker, JSON.stringify({ Stage: Mode }));
   const Child = Spawn(Executable, [Workspace, '--no-sandbox', '--disable-gpu', '--disable-updates', '--skip-welcome', '--skip-release-notes',
     '--user-data-dir=' + Profile, '--extensions-dir=' + Path.join(Work, 'extensions'), '--remote-debugging-port=9237',
-    '--extensionDevelopmentPath=' + Root, '--extensionDevelopmentPath=' + Harness], {
-    env: { ...Process.env, CARBONLUAU_E2E_MARKER: Marker }, windowsHide: true, shell: false, stdio: ['ignore', 'pipe', 'pipe']
+    ...(Vsix ? [] : ['--extensionDevelopmentPath=' + Root]), '--extensionDevelopmentPath=' + Harness], {
+    env: { ...Process.env, CARBONLUAU_E2E_MARKER: Marker, CARBONLUAU_E2E_INSTALL_ROOT: Vsix ? Path.join(Work, 'extensions') : '' }, windowsHide: true, shell: false, stdio: ['ignore', 'pipe', 'pipe']
   });
   let Output = '', Exited = false, Code;
   const Exit = new Promise(Resolve => Child.once('exit', Value => { Exited = true; Code = Value; Resolve(Value); }));
@@ -64,6 +65,13 @@ async function Main() {
   Fs.writeFileSync(Path.join(Workspace, 'init.luau'), 'local Players = game:GetService("Players")\nlocal Player = Players:GetPlayers()[1]\nPlayer:GiveItem("wood", 1, GiveItemBehavior.InventoryOnly)\nlocal Value: number = "wrong"\nreturn Value\n');
   Fs.writeFileSync(Path.join(Workspace, '.config.luau'), 'while true do end');
   const Executable = await Download({ version: '1.95.3', cachePath: Path.join(Root, 'build/vscode-cache') });
+  if (Vsix) {
+    const Cli = Process.platform === 'win32' ? Path.join(Path.dirname(Executable), 'resources/app/out/cli.js') : Path.resolve(Executable, '../resources/app/out/cli.js');
+    const Installed = SpawnSync(Executable, [Cli, '--no-sandbox', '--user-data-dir=' + Profile, '--extensions-dir=' + Path.join(Work, 'extensions'), '--install-extension', Path.resolve(Vsix)],
+      { env: { ...Process.env, ELECTRON_RUN_AS_NODE: '1' }, encoding: 'utf8', windowsHide: true, timeout: 120000 });
+    if (Installed.status !== 0) throw new Error('Clean VSIX installation failed: ' + Installed.stdout + Installed.stderr);
+    Process.stdout.write('[CarbonLuau:E2E] Installed VSIX in fresh extension directory\n');
+  }
   await Run('restricted', Executable);
   await Run('reopen', Executable);
 }

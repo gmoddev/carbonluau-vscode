@@ -93,9 +93,10 @@
     "lint": "eslint .",
     "check": "npm run build && npm run lint && node tests/RunUnit.cjs",
     "test:e2e": "node tests/e2e/Run.cjs",
-    "vscode:prepublish": "npm run check"
+    "vscode:prepublish": "npm run build"
   },
   "devDependencies": {
+    "@vscode/vsce": "4.0.0",
     "@eslint/js": "9.39.1",
     "@types/node": "22.20.4",
     "@types/vscode": "1.95.0",

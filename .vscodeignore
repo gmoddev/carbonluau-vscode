@@ -8,6 +8,9 @@ tsconfig.json
 tsconfig.webview.json
 webview/**
 build/**
+tools/**
+dist/**/*.map
+dist/release/**
 eslint.config.mjs
 package-lock.json
 .codexlock*

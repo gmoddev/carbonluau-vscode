@@ -35,7 +35,7 @@ export async function LoadPack(ExtensionRoot: string): Promise<Pack> {
     PreviewNative: string; PreviewLauncher: string; PreviewContainmentProfile: string; ToolingBuildId: string; SemanticRevision: string;
   };
   if (Manifest.ManifestSchema !== 1 || Manifest.Platform !== Platform ||
-      Manifest.PackVersion !== 'foundation-b-development' || !Manifest.Files || Object.keys(Manifest.Files).length > 512) throw new Error('Incompatible CarbonLuau tooling pack.');
+      Manifest.PackVersion !== '0.4.0-rc.1' || !Manifest.Files || Object.keys(Manifest.Files).length > 512) throw new Error('Incompatible CarbonLuau tooling pack.');
   for (const [Name, Digest] of Object.entries(Manifest.Files)) {
     if (!/^[a-zA-Z0-9_.-]+$/.test(Name) || Name === '.' || Name === '..' || !/^[0-9a-f]{64}$/.test(Digest)) throw new Error('Unsafe tooling pack file.');
     const File = Path.join(Root, Name);

@@ -1,9 +1,23 @@
 # CarbonLuau for VS Code
 
-Foundation A development integration: Luau syntax, canonical CarbonLuau API
-information, project/package diagnostics and trusted language analysis. This is
-an unpublished development extension; no VSIX or Marketplace release is provided.
+Official experimental Luau syntax, canonical CarbonLuau API information,
+project/package diagnostics, trusted language analysis and GUI preview.
 Runtime semantics and metadata belong to [CarbonLuau](https://github.com/gmoddev/CarbonLuau).
+
+## Install
+
+Obtain the candidate VSIX matching Windows x64, Linux x64 or macOS arm64 and
+verify its companion SHA-256 checksum. In VS Code 1.95 or newer, run
+**Extensions: Install from VSIX**, select the file, then open a Luau project.
+The self-contained tooling pack is included: no source checkout, Node/.NET SDK,
+Carbon installation or separate language server is required. Candidate artifacts
+are not yet a public release or Marketplace/Open VSX publication.
+
+Windows/Linux x64 support language analysis and GUI preview after Workspace
+Trust. macOS arm64 provides static tooling only; no macOS x64 artifact is qualified.
+Restricted Mode retains syntax, canonical API information and project diagnostics.
+Extension version `0.0.1` uses tooling pack `0.4.0-rc.1` for scripting API
+`0.4.0-experimental`; these are separate compatibility identities.
 
 ## Develop and run
 
@@ -26,6 +40,12 @@ Pack payload hashes detect corruption; local development packs are not signed
 distribution attestations. Run `npm run test:e2e` on a dedicated desktop runner
 (Linux: `xvfb-run -a npm run test:e2e`). Tests manipulate their own VS Code trust
 profile. See [architecture and qualification routing](docs/Architecture.md).
+
+After `npm run check`, run `python tools/Package.py` to build a deterministic
+platform VSIX and provenance/checksum files in `dist/release`. Set
+`CARBONLUAU_E2E_VSIX` to that artifact before running `npm run test:e2e` to install
+and exercise it in a fresh extension directory/profile. CI does this on Windows
+and Linux. Packaging neither signs nor publishes the artifact.
 
 ## Projects and diagnostics
 

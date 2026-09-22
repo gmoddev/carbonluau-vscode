@@ -23,6 +23,10 @@ exports.run = async () => {
   const Mode = JSON.parse(Fs.readFileSync(Marker, 'utf8')).Stage;
   const Extension = Vscode.extensions.getExtension('gmoddev.carbonluau-vscode');
   Assert.ok(Extension); await Extension.activate();
+  if (Process.env.CARBONLUAU_E2E_INSTALL_ROOT) {
+    Assert.ok(Extension.extensionPath.startsWith(Process.env.CARBONLUAU_E2E_INSTALL_ROOT), 'runs installed artifact, not source extension');
+    Assert.ok(Fs.existsSync(require('node:path').join(Extension.extensionPath, 'PROVENANCE.json')));
+  }
   const Document = await Vscode.workspace.openTextDocument(Vscode.Uri.joinPath(Vscode.workspace.workspaceFolders[0].uri, 'init.luau'));
   await Vscode.window.showTextDocument(Document);
   await Vscode.commands.executeCommand('carbonLuau.validateProject');

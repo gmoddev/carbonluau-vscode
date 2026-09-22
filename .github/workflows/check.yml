@@ -45,12 +45,24 @@ jobs:
             "CARBONLUAU_ANALYSIS_FIXTURE=$Fixture" >> $env:GITHUB_ENV
           }
       - run: npm run check
+      - name: Build deterministic platform VSIX candidate
+        shell: pwsh
+        run: |
+          python tools/Package.py
+          if ($LASTEXITCODE -ne 0) { throw 'VSIX packaging failed' }
+          $Vsix = (Get-ChildItem dist/release/*.vsix).FullName
+          "CARBONLUAU_E2E_VSIX=$Vsix" >> $env:GITHUB_ENV
       - name: Actual VS Code trust, language and GUI panel integration (Linux)
         if: runner.os == 'Linux'
         run: xvfb-run -a npm run test:e2e
       - name: Actual VS Code trust, language and GUI panel integration (Windows)
         if: runner.os == 'Windows'
         run: npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vscode-candidate-${{ matrix.os }}
+          path: dist/release/
+          if-no-files-found: error
       - uses: actions/upload-artifact@v4
         if: always()
         with:

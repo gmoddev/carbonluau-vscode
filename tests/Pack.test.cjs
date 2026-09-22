@@ -15,7 +15,7 @@ Test('pack policy mismatch preserves static mode while bad payloads/identities f
     Fs.writeFileSync(Path.join(Root, Name), Name);
     return [Name, Hash('sha256').update(Name).digest('hex')];
   }));
-  const Manifest = { ManifestSchema: 1, Platform, PackVersion: 'foundation-b-development', ApiVersion: '0.4.0-experimental',
+  const Manifest = { ManifestSchema: 1, Platform, PackVersion: '0.4.0-rc.1', ApiVersion: '0.4.0-experimental',
     Host: 'host', LanguageServer: 'lsp', Definitions: 'definitions', Documentation: 'documentation', Files,
     LanguageServerQualified: true, QualifiedAnalysisPlatforms: [Platform], LanguageServerVersion: '1.70.0',
     LanguageServerLuauRevision: 'a62362a53ddc9c629b0e29378a84abb4534d8b64', AnalysisSecurityPolicyVersion: 1,
@@ -26,7 +26,7 @@ Test('pack policy mismatch preserves static mode while bad payloads/identities f
     Save(); Assert.equal((await LoadPack(Temp)).LanguageServerQualified, ['win32-x64', 'linux-x64'].includes(Platform));
     Manifest.AnalysisProxyRevision = 99; Save(); Assert.equal((await LoadPack(Temp)).LanguageServerQualified, false);
     Manifest.PackVersion = 'unknown'; Save(); await Assert.rejects(LoadPack(Temp), /Incompatible/);
-    Manifest.PackVersion = 'foundation-b-development'; Save();
+    Manifest.PackVersion = '0.4.0-rc.1'; Save();
     Fs.writeFileSync(Path.join(Root, 'host'), 'replacement'); await Assert.rejects(LoadPack(Temp), /integrity/);
   } finally { Fs.rmSync(Temp, { recursive: true }); }
 });
