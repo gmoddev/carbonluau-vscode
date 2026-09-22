@@ -1,0 +1,39 @@
+:root { color-scheme: light dark; }
+* { box-sizing: border-box; }
+body { margin: 0; color: var(--vscode-foreground); background: var(--vscode-editor-background); font-family: var(--vscode-font-family); font-size: 12px; }
+button, select, input { font: inherit; color: var(--vscode-input-foreground); background: var(--vscode-input-background); border: 1px solid var(--vscode-input-border, #7775); border-radius: 3px; padding: 5px; }
+button { cursor: pointer; } button:hover { background: var(--vscode-list-hoverBackground); }
+button:focus-visible, input:focus-visible, select:focus-visible, [role=treeitem]:focus-visible { outline: 1px solid var(--vscode-focusBorder); }
+input[type=number] { width: 76px; } header { padding: 12px 16px; border-bottom: 1px solid var(--vscode-panel-border); }
+.brand { font-weight: 600; letter-spacing: .04em; margin-right: 16px; }
+.toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+#status { margin-top: 9px; min-height: 16px; overflow-wrap: anywhere; }
+.workspace { display: grid; grid-template-columns: minmax(160px, 220px) minmax(250px, 1fr) minmax(230px, 310px); height: calc(100vh - 158px); min-height: 240px; }
+aside { overflow: auto; padding: 12px; border-right: 1px solid var(--vscode-panel-border); }
+.inspector-side { border-left: 1px solid var(--vscode-panel-border); border-right: 0; }
+h2 { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; margin: 0 0 12px; color: var(--vscode-descriptionForeground); }
+h3 { font-size: 13px; overflow-wrap: anywhere; } p { line-height: 1.5; }
+.viewport-area { overflow: auto; padding: 20px; background-color: var(--vscode-sideBar-background); background-image: linear-gradient(45deg,#8881 25%,transparent 25%,transparent 75%,#8881 75%),linear-gradient(45deg,#8881 25%,transparent 25%,transparent 75%,#8881 75%); background-size: 20px 20px; background-position: 0 0,10px 10px; }
+#canvas-space { position: relative; }
+#surface { position: relative; overflow: hidden; transform-origin: top left; background: #151b24; box-shadow: 0 2px 18px #0003; }
+.paint-layer { position: absolute; inset: 0; pointer-events: none; }
+.paint-box,.clip { position: absolute; }
+.clip { overflow: hidden; pointer-events: none; }
+.scroll-layer { position: absolute; left: 0; top: 0; pointer-events: none; }
+.paint { pointer-events: auto; overflow: hidden; cursor: crosshair; }
+.text-paint { display: flex; white-space: pre-wrap; overflow-wrap: anywhere; }
+.image-placeholder { display: flex; align-items: center; justify-content: center; padding: 4px; font: 10px monospace; color: #c7d1df; background: repeating-linear-gradient(135deg,#42506888 0 8px,#26334888 8px 16px); border: 1px dashed #95a3b9; overflow-wrap: anywhere; }
+.selection { outline: 2px solid #58b8ff; outline-offset: -2px; pointer-events: none; }
+.tree-row { display: flex; align-items: center; min-height: 26px; cursor: pointer; white-space: nowrap; }
+.tree-row[aria-selected=true] { background: var(--vscode-list-activeSelectionBackground); color: var(--vscode-list-activeSelectionForeground); }
+.tree-toggle { width: 22px; flex-shrink: 0; padding: 1px; background: none; border: 0; }
+.muted { color: var(--vscode-descriptionForeground); }
+pre { font-size: 11px; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.5; }
+.properties { margin: 0 0 12px; font-size: 11px; } .properties dt { color: var(--vscode-descriptionForeground); margin-top: 8px; } .properties dd { margin: 2px 0; overflow-wrap: anywhere; font-family: var(--vscode-editor-font-family, monospace); }
+summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
+details { border-bottom: 1px solid var(--vscode-panel-border); }
+.resource-row { margin: 8px 0; } meter { width: 100%; height: 8px; display: block; margin-top: 3px; }
+.resource-warning { color: var(--vscode-editorWarning-foreground); } .layout-notice { border-left: 2px solid var(--vscode-focusBorder); padding-left: 8px; }
+footer { padding: 10px 16px; border-top: 1px solid var(--vscode-panel-border); font-size: 11px; line-height: 1.5; }
+#metrics { color: var(--vscode-descriptionForeground); }
+@media (max-width: 800px) { .workspace { grid-template-columns: 160px minmax(220px, 1fr); } .inspector-side { grid-column: 1 / -1; max-height: 40vh; border-top: 1px solid var(--vscode-panel-border); } .workspace { height: auto; } .viewport-area, .tree-side { height: 50vh; } }

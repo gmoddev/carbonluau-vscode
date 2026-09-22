@@ -5,6 +5,9 @@ extension/**
 tests/**
 docs/**
 tsconfig.json
+tsconfig.webview.json
+webview/**
+build/**
 eslint.config.mjs
 package-lock.json
 .codexlock*

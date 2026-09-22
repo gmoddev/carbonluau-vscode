@@ -5,9 +5,10 @@ import { Capture, Snapshot, SourceKey } from './Snapshot';
 import { Language } from './Language';
 import { RegisterMetadata } from './Metadata';
 import { Preview, PreviewSelection, PreviewState, ToolingPreviewPlan } from './Preview';
+import { PreviewPanel } from './PreviewPanel';
 
 interface SourceDiagnostic { Folder: string; Path: string; Code: string; Message: string; Severity: string; Line: number; Column: number; EndLine: number; EndColumn: number }
-interface Inspection { Diagnostics: SourceDiagnostic[]; Imports: unknown[]; Projects: { Kind: string; PackageId?: string }[] }
+interface Inspection { Diagnostics: SourceDiagnostic[]; Imports: unknown[]; Projects: { Id: string; Kind: string; Prefix: string; PackageId?: string; ValidPackage: boolean }[] }
 let Manager: ProjectManager | undefined;
 
 class ProjectManager {
@@ -19,6 +20,8 @@ class ProjectManager {
   private Pack?: Pack;
   private Metadata?: Vscode.Disposable;
   private Preview?: Preview;
+  private Panel?: PreviewPanel;
+  private Inspection?: Inspection;
   private SelectedApi = '';
   private Generation = 0;
   private Running?: Promise<void>;
@@ -35,6 +38,7 @@ class ProjectManager {
     if (this.Stopped) return;
     ++this.Generation; this.Pending = true; this.Diagnostics.clear(); this.Language?.Invalidate();
     this.Preview?.Invalidate();
+    this.Panel?.Invalidate();
     if (!Vscode.workspace.isTrusted) void this.Language?.Stop();
     if (this.Timer) clearTimeout(this.Timer);
     this.Timer = setTimeout(() => { void this.Validate(); }, 250);
@@ -57,6 +61,7 @@ class ProjectManager {
         const Result = await this.Host!.Request('validateProject', Snapshot.Params, Digest) as Inspection;
         if (Generation !== this.Generation || this.Stopped) continue;
         this.ApplyDiagnostics(Result, Snapshot);
+        this.Inspection = Result;
         if (Vscode.workspace.isTrusted && this.Pack!.LanguageServerQualified) {
           this.Language ??= new Language(this.Pack!, Message => this.Log(Message), () => {
             this.Status.text = `CarbonLuau: ${this.SelectedApi}${Vscode.workspace.isTrusted && this.Language?.Ready ? '' : ' (static only)'}`;
@@ -67,6 +72,7 @@ class ProjectManager {
         this.Status.tooltip = `Package schema 1; ${Result.Projects.length} projects. ${Vscode.workspace.isTrusted ? 'Workspace configuration is excluded from supervised analysis.' : 'Richer Luau analysis is disabled until this workspace is trusted.'}`;
         this.Log(`Validated ${Result.Projects.length} projects; ${Result.Diagnostics.length} diagnostics; ${Result.Imports.length} legal imports. Runtime compiler validation is unavailable.`);
       } catch (Error) {
+        this.Inspection = undefined;
         const Message = Error instanceof globalThis.Error ? Error.message : String(Error);
         this.Log(Message); this.Status.text = 'CarbonLuau: unavailable'; this.Status.tooltip = Message;
         const Document = Vscode.window.activeTextEditor?.document;
@@ -116,6 +122,7 @@ class ProjectManager {
   }
   async Restart(): Promise<void> {
     ++this.Generation; this.Pending = false;
+    this.Panel?.Suspend('Restarting tooling…');
     await this.Preview?.Stop(); this.Preview = undefined;
     await this.Language?.Stop(); this.Language?.dispose(); this.Language = undefined;
     await this.Host?.Stop(); this.Host = undefined;
@@ -124,6 +131,7 @@ class ProjectManager {
   }
   async Stop(): Promise<void> {
     this.Stopped = true; ++this.Generation; this.Pending = false;
+    this.Panel?.dispose(); this.Panel = undefined;
     await this.Preview?.Stop(); this.Preview = undefined;
     if (this.Timer) clearTimeout(this.Timer);
     await this.Language?.Stop(); this.Language?.dispose(); this.Language = undefined;
@@ -140,9 +148,23 @@ class ProjectManager {
     const Snapshot = await Capture();
     if (this.Stopped || Generation !== this.Generation || !Vscode.workspace.isTrusted) throw new Error('Preview source or trust changed during capture.');
     this.Preview ??= new Preview(Pack, () => Vscode.workspace.isTrusted && !this.Stopped, Message => this.Log(Message));
-    return this.Preview.Request(Snapshot.Params, Selection);
+    try { return await this.Preview.Request(Snapshot.Params, Selection); }
+    catch (Failure) { this.Log('Preview: ' + String(Failure)); throw Failure; }
   }
   GetPreviewState(): PreviewState { return this.Preview?.GetState() ?? { Running: false }; }
+  async ShowPreview(): Promise<void> {
+    if (this.Panel) { this.Panel.Reveal(); return; }
+    // Discovery comes from the canonical static host, including package admission.
+    await this.Validate();
+    const Projects = this.Inspection?.Projects.filter(P => P.Kind === 'Root' || (P.Kind === 'Addon' && P.ValidPackage)) ?? [];
+    if (!Projects.length) { this.Log('Preview GUI requires a canonical root init.luau or valid addon project.'); this.ShowOutput(); return; }
+    const Pick = Projects.length === 1 ? Projects[0] : (await Vscode.window.showQuickPick(Projects.map(P => ({ label: P.PackageId || P.Id, description: P.Prefix, Project: P })), { title: 'CarbonLuau: Preview GUI project' }))?.Project;
+    if (!Pick || this.Stopped) return;
+    // Another command may have opened it while discovery/picking was awaited.
+    const Existing = this.Panel as PreviewPanel | undefined;
+    if (Existing) { Existing.Reveal(); return; }
+    this.Panel = new PreviewPanel(this.Context, Pick.Id, Selection => this.RequestPreview(Selection), () => this.Preview?.Invalidate(), () => { this.Panel = undefined; });
+  }
 }
 
 export function activate(Context: Vscode.ExtensionContext): { RequestPreview: (Selection: PreviewSelection) => Promise<ToolingPreviewPlan>; GetPreviewState: () => PreviewState } {
@@ -150,7 +172,7 @@ export function activate(Context: Vscode.ExtensionContext): { RequestPreview: (S
   const Current = Manager;
   for (const [Name, Handler] of [
     ['validateProject', () => Current.Validate()], ['selectScriptingApi', () => Current.SelectApi()],
-    ['restartTooling', () => Current.Restart()], ['showOutput', () => Current.ShowOutput()]
+    ['restartTooling', () => Current.Restart()], ['showOutput', () => Current.ShowOutput()], ['previewGui', () => Current.ShowPreview()]
   ] as const) Context.subscriptions.push(Vscode.commands.registerCommand('carbonLuau.' + Name, Handler));
   const Watcher = Vscode.workspace.createFileSystemWatcher('**/{addon.json,*.luau,*.claddon}');
   Context.subscriptions.push(Watcher, Watcher.onDidChange(() => Current.Schedule()), Watcher.onDidCreate(() => Current.Schedule()), Watcher.onDidDelete(() => Current.Schedule()),

@@ -18,7 +18,7 @@ Test('manifest declares a bounded desktop workspace bootstrap', () => {
   for (const Capability of Object.values(Manifest.capabilities)) {
     Assert.ok(Strings[Capability.description.slice(1, -1)]);
   }
-  Assert.deepEqual(Manifest.contributes.commands.map(Item => Item.command), ['carbonLuau.validateProject', 'carbonLuau.selectScriptingApi', 'carbonLuau.restartTooling', 'carbonLuau.showOutput']);
+  Assert.deepEqual(Manifest.contributes.commands.map(Item => Item.command), ['carbonLuau.previewGui', 'carbonLuau.validateProject', 'carbonLuau.selectScriptingApi', 'carbonLuau.restartTooling', 'carbonLuau.showOutput']);
   Assert.equal(Manifest.contributes.languages[0].id, 'luau');
   Assert.equal(Manifest.browser, undefined);
   Assert.equal(Manifest.dependencies?.['vscode-languageclient'], undefined);
@@ -71,6 +71,7 @@ for (const Trusted of [false, true]) {
       './AnalysisAdapter': { BuildTransform: () => '-- trusted empty adapter' },
       './Metadata': { RegisterMetadata: () => Disposable },
       './Preview': { Preview: class { constructor() { throw new Error('Preview must never start on activation'); } } },
+      './PreviewPanel': { PreviewPanel: class { constructor() { throw new Error('Panel must never open on activation'); } } },
       './Language': { Language: class { constructor() { throw new Error('Unqualified language server must never start'); } } }
     };
     const Context = Vm.createContext({ exports: Exports, Buffer, setTimeout: () => 1, clearTimeout: () => {}, require: Name => {

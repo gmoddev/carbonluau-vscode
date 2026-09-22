@@ -5,6 +5,7 @@ const Process = require('node:process');
 const { spawn: Spawn } = require('node:child_process');
 const { setTimeout: Delay } = require('node:timers/promises');
 const { downloadAndUnzipVSCode: Download } = require('@vscode/test-electron');
+const Panel = require('./Panel.cjs');
 const Root = Path.resolve(__dirname, '../..');
 Fs.mkdirSync(Path.join(Root, 'build'), { recursive: true });
 const Work = Fs.mkdtempSync(Path.join(Root, 'build/e2e-'));
@@ -36,13 +37,14 @@ async function Run(Mode, Executable) {
   let Output = '', Exited = false, Code;
   const Exit = new Promise(Resolve => Child.once('exit', Value => { Exited = true; Code = Value; Resolve(Value); }));
   for (const Stream of [Child.stdout, Child.stderr]) Stream.on('data', Value => { Output = (Output + Value).slice(-131072); });
-  const End = Date.now() + 150000;
+  const End = Date.now() + 240000;
   try {
     while (!Exited && Date.now() < End) {
       const State = JSON.parse(Fs.readFileSync(Marker, 'utf8'));
       if (State.Stage === 'grant' || State.Stage === 'revoke') {
         try { await ClickTrust(State.Stage === 'grant' ? 'Trust' : "Don't Trust"); } catch { /* Workbench may be reloading. */ }
       }
+      if (State.Stage === 'panel' && await Panel.Action(State, Work)) Fs.writeFileSync(Marker, JSON.stringify({Stage:'panel-done',Action:State.Action}));
       await Delay(250);
     }
     if (!Exited) { Child.kill(); throw new Error('VS Code E2E timed out.\n' + Output); }

@@ -51,7 +51,7 @@ requests canonical preview execution over stdio, validates exact plan identity,
 and stores a copied plan. Source/API/folder changes and trust/reload clear plans
 and end the dedicated coordinator session. No workspace code or GUI layout runs
 in JavaScript. Errors clear the old plan; an unreaped process requires Restart
-Tooling. No visual command, WebView or mocks are added.
+Tooling. Foundation B itself adds no visual command, WebView or mocks.
 
 Windows/Linux preview limits are separate from LSP limits: a fresh worker,
 1-second execution wall deadline, 64 MiB Luau heap and 256 MiB process profile.
@@ -59,3 +59,53 @@ Linux RSS is a sampled watchdog alongside hard DATA limits; neither platform
 claims a filesystem/network OS sandbox. macOS remains static-only. See the
 selected canonical revision's `docs/ToolingFoundationB.md` and
 `tooling/preview-plan.schema.json` for all semantics and qualification.
+
+## Foundation C editor consumer
+
+`PreviewPanel` owns the single panel, request cancellation/debounce and harmless
+viewport/zoom preferences. It uses canonical static project discovery and the
+unchanged Foundation B request path. No runtime/Core/plan-schema changes are
+needed. Panel disposal, invalidation and extension shutdown cancel pending work.
+Failed requests clear the picture; trust/pack qualification gates stay in both
+the editor and canonical host.
+
+`PreviewContract` validates transport structure, numeric finiteness, bounded
+strings/arrays, object references, acyclic hierarchy and DOM construction budget.
+Those are renderer safety checks, not a second implementation of GUI validity,
+resource limits, layout, clip-depth legality or projection costs. Resource
+warnings use the plan's counts/limits; 80% is an editor warning threshold only.
+
+The bundled WebView uses absolute Core rectangles, emitted paint order and
+explicit clip-owner chains. Nested CSS clip boxes consume supplied rectangles;
+coordinate subtraction converts global positions into parent-relative CSS.
+No retained UDim, anchor, layout, padding or ZIndex is interpreted. Local scroll
+translates descendant paint layers using supplied content/viewport rectangles;
+it never changes or returns canonical state. Selection uses IDs and never calls
+Luau. Plan replacement resets scroll/selection; zoom does not request execution.
+
+The WebView action schema is version 1: Ready, Refresh, Viewport, Zoom and Screen.
+Unknown/extra fields, paths, bad values and messages over 4096 serialized
+characters are rejected. Screen IDs must have been offered by the current host
+response. Selection stays inside the WebView; no navigation/execute/file/network
+message exists. Extension State messages contain preferences, bounded status,
+screen choices and an optional validated schema-1 plan. Plans are validated
+again on rendering. Transport limits are 8 Mi serialized characters, 4096 nodes,
+128 hierarchy levels and 32768 paint/clip DOM units, above current canonical
+limits; upstream IPC additionally caps real UTF-8 frames at 8 MiB.
+
+Only packaged media and the bundled browser script are local resource roots.
+Scripts require an unpredictable 192-bit nonce; CSP denies connections, images,
+fonts, frames, objects, form submission, base-URI changes and eval. Workspace
+strings only reach textContent, never HTML or asset URLs. Browser style properties
+receive validated numbers or fixed presentation choices. VS Code injects its own
+WebView bootstrap; tests inspect workspace-controlled DOM separately.
+These controls follow the [official WebView security guidance](https://code.visualstudio.com/api/extension-guides/webview#security).
+
+The browser sandbox/CSP protects the panel; the existing native worker and Luau
+VM controls protect preview execution within their documented limits. Neither
+child processes nor CSP constitute portable OS filesystem/network sandboxing
+for native tooling. Workspace Trust is consent, not containment.
+
+Foundation D can add a separately authorized interaction protocol above this
+read-only plan consumer. No mock state, callback execution, production tokens,
+debugger, live-server channel or authoring/source-write path exists in C.

@@ -1,4 +1,4 @@
-name: Tooling Foundations A and B
+name: Tooling Foundations A, B and C
 on: [push, pull_request, workflow_dispatch]
 permissions:
   contents: read
@@ -45,15 +45,18 @@ jobs:
             "CARBONLUAU_ANALYSIS_FIXTURE=$Fixture" >> $env:GITHUB_ENV
           }
       - run: npm run check
-      - name: Actual VS Code trust and language integration (Linux)
+      - name: Actual VS Code trust, language and GUI panel integration (Linux)
         if: runner.os == 'Linux'
         run: xvfb-run -a npm run test:e2e
-      - name: Actual VS Code trust and language integration (Windows)
+      - name: Actual VS Code trust, language and GUI panel integration (Windows)
         if: runner.os == 'Windows'
         run: npm run test:e2e
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: vscode-e2e-${{ matrix.os }}
-          path: build/e2e-*/*.log
+          path: |
+            build/e2e-*/*.log
+            build/e2e-*/panel-*.json
+            build/e2e-*/preview.png
           if-no-files-found: ignore

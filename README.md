@@ -48,7 +48,7 @@ mode adds type diagnostics, inferred hover, completion, signatures and source
 navigation. Reference hovers identify themselves as canonical API information,
 not expression type inference. Unsupported API/schema identities fail explicitly.
 
-Commands: **Validate Project**, **Select Scripting API**, **Restart Tooling**, and
+Commands: **Preview GUI**, **Validate Project**, **Select Scripting API**, **Restart Tooling**, and
 **Show Output**, all under **CarbonLuau** in the Command Palette. Only installed
 offline API targets can be selected.
 
@@ -82,6 +82,39 @@ when the workspace is trusted. macOS x64 has no execution evidence.
 
 Once provisioned, editor operation is offline: no telemetry, HTTP listener,
 remote API, server connection or automatic tooling download. Standard VS Code
-services have their own settings. Foundation B adds an internal, trust-gated
-preview request/plan-storage seam for Foundation C. It has no visual preview
-command or WebView. No mocks, debugger or live server integration exists here.
+services have their own settings. No mocks, debugger or live server integration
+exists here.
+
+## GUI preview
+
+In a trusted Windows/Linux workspace with a qualified tooling pack, run
+**CarbonLuau: Preview GUI**. Choose a canonical root/addon project if there is more
+than one. The entry defaults to its admitted `init.luau`. Source executes in
+Foundation B's fresh bounded worker, never in the extension host. No Carbon
+installation or Rust server is needed. macOS remains static-only.
+
+The panel combines a paint surface, ID-based hierarchy, retained/projected
+inspector and canonical resource usage. Click a painted object or hierarchy row
+to inspect it. Arrow keys navigate the hierarchy. Layout helpers and hidden
+objects remain inspectable; managed children identify their layout owner.
+Buttons select only: they do not run callbacks.
+
+Choose a viewport preset or enter custom whole-pixel dimensions (1–8192).
+Changing the viewport requests a new canonical plan. **Display zoom** changes
+only presentation. Source edits/saves debounce for 400 ms and request a fresh
+worker; **Refresh** does the same. Pending/failed refreshes clear the previous
+plan. Successful plans reset selection to the screen and local scroll to zero.
+Use the screen selector when a project produces multiple screens.
+
+Layout and geometry come from canonical CarbonLuau tooling. Text uses system
+font approximations; image identities use offline placeholders, including
+Sprite/Png/Item/SteamAvatar. None paints no image. Scrolling uses wheel/Shift-wheel
+or selected-scroller inspector offsets as an editor-only convenience. No images,
+avatars, Rust files or fonts are downloaded. This is not an authenticated Rust
+client; actual client delivery, click receipt and scroll state are unavailable.
+
+Source navigation is disabled because Foundation B supplies no creation-site
+mapping. It also supplies no script log stream, so there is no preview console.
+Errors appear in panel status; operational details go to **CarbonLuau Output**.
+Existing canonical Problems/type diagnostics remain available. Only viewport
+and zoom preferences are persisted. See [Foundation C evidence](docs/ToolingFoundationC.md).
