@@ -1,13 +1,13 @@
 # Tooling Foundation C
 
 Qualification record for the isolated `codex/tooling-foundation-c` branch.
-Windows/Linux local qualification completed on 2026-09-21/22. The hosted CI
-result and exact delivery revisions are recorded in the evidence follow-up.
+Windows/Linux local and hosted qualification completed on 2026-09-21/22.
+This documentation-only evidence follow-up changes no implementation files.
 
 ## Delivery and reconciliation
 
-1. **Verdict:** PASS for Windows/Linux local Foundation C gates; hosted CI pending
-   implementation push. macOS execution remains deliberately unqualified.
+1. **Verdict:** PASS for Windows/Linux Foundation C and macOS static gates.
+   macOS execution remains deliberately unqualified.
 2. **CarbonLuau:** started from origin/main
    `c37c36e0508a759c899dfdd4a1545cc923a88fc6`; fast-forward reconciliation finishes at
    `069387c0a56171808ef4be9725c766f2d8841008`. No Foundation C runtime edits.
@@ -15,10 +15,12 @@ result and exact delivery revisions are recorded in the evidence follow-up.
 4. **Foundation B reconciliation:** fast-forwarded the extension to
    `c93210ea692607ddd8d2ecb607753f8e30e4f7fa`; runtime to its evidence revision above.
    No conflicts, discarded changes, main resets or shared-checkout edits.
-5. **C implementation/evidence commits:** this implementation commit contains
-   the locally qualified source; exact hashes will be recorded in the evidence follow-up.
-6. **Final tested extension revision:** the implementation commit containing this
-   record, tested as the final isolated source snapshot before committing.
+5. **C implementation/evidence commits:** implementation
+   `71cd12e67718b02134003eb63e0c903c579c1313`; evidence is this documentation-only
+   follow-up commit, whose sole changed file is this record.
+6. **Final tested extension revision:**
+   `71cd12e67718b02134003eb63e0c903c579c1313`, tested locally as the final isolated
+   source snapshot and then by hosted CI at that exact commit.
 
 ## Editor behavior
 
@@ -82,7 +84,9 @@ result and exact delivery revisions are recorded in the evidence follow-up.
     restricted/reopen scenarios PASS on Node 22.17.0.
 29. **Linux:** same 47/47 with zero skips and actual VS Code/Xvfb scenarios PASS;
     remote Docker runner constrained to two CPUs and 4 GiB.
-30. **macOS:** static-only; CI build/lint/DOM/unit checks do not qualify execution.
+30. **macOS:** hosted darwin-arm64 pack build, lint and 34 static/DOM/unit tests
+    PASS; 13 native executable-analysis tests are skipped by policy. No macOS
+    VS Code execution run occurred. x64 execution remains unqualified too.
 31. **Foundation B regression:** PASS on both platforms with unchanged
     `3d0fce97ecc3aeb6f078f26c03b5328198d38fbe` pack payloads downloaded from
     [the successful canonical tooling run](https://github.com/gmoddev/CarbonLuau/actions/runs/35677995786).
@@ -91,20 +95,32 @@ result and exact delivery revisions are recorded in the evidence follow-up.
     forbidden capabilities, module policy, screen selection, trust and identity.
     The 47-test extension suite also exercises the real analysis supervisor and
     its native resource controls. No Core/production semantics changed.
-32. **CI:** pending implementation push after all applicable local gates.
+32. **CI:** [run 35682572267](https://github.com/gmoddev/carbonluau-vscode/actions/runs/35682572267)
+    PASS for windows-latest, ubuntu-latest and macos-latest at the exact
+    implementation revision. Windows/Linux each passed 47 tests, zero skips,
+    plus actual VS Code restricted/reopen scenarios. Canonical pack qualification
+    also passed its hostile-worker external deadline/memory/protocol/cancellation/
+    recovery suite on both platforms. Logs, panel results and screenshots are
+    attached to that run. Runtime repository CI did not need a new C run.
 33. **Documentation:** README workflow and Architecture boundary/protocol updated.
 34. **ToolingPreviewPlan:** no schema, Core, runtime, metadata or pack-pin changes.
 35. **D handoff:** retain ProjectManager -> Preview -> bounded B worker -> plan
     seam and independent read-only Renderer. Future mock fixture/interaction
     requests require their own scoped protocol/trust decision; no authority is
-    implied by selection or local scroll.
+    implied by selection or local scroll. D owns mock Player fixtures, mock
+    Items/inventory state, Activated simulation, conditional GUI preview and
+    richer local interactions through canonical worker contracts, not
+    renderer-owned runtime semantics.
 36. **Exclusions:** no mocks, Activated callbacks, production tokens, TextBox,
     live server, debugger, authoring, source rewriting, stateful reload or VSIX
     publication.
 37. **Branch/worktrees:** isolated CarbonLuau-tooling-c and carbonluau-vscode-c;
     main and other-agent/B worktrees preserved. Both remote mains were rechecked
     before committing and still matched the starting hashes. The runtime branch
-    has no C changes; only the extension C branch needs a new implementation push.
+    has no C changes and remains local at the already-published B evidence
+    revision. The extension implementation is pushed to
+    `origin/codex/tooling-foundation-c`; this documentation-only follow-up is
+    delivered on the same branch. No main merge or VSIX publication occurred.
 
 ## Observed editor performance
 
