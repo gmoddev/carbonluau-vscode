@@ -31,7 +31,7 @@ for (const Trusted of [false, true]) {
     const Disposable = { dispose() {} };
     const Event = () => Disposable;
     const Uri = { fsPath: '/safe/main.luau', path: '/safe/main.luau', toString: () => 'file:///safe/main.luau' };
-    const Pack = { ApiVersion: '0.4.0-experimental', PackVersion: 'foundation-b-development', Platform: 'win32-x64', LanguageServerQualified: false };
+    const Pack = { ApiVersion: '0.4.0-experimental', PackVersion: '0.4.0-rc.1', Platform: 'win32-x64', LanguageServerQualified: false };
     let Api = '', Failure = false;
     const Vscode = {
       window: {

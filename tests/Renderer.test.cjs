@@ -10,7 +10,7 @@ const Canonical = [Process.env.CARBONLUAU_CANONICAL_ROOT, Path.resolve(__dirname
 Assert.ok(Canonical, 'Canonical Foundation B golden plans must be provisioned.');
 const Goldens = JSON.parse(Fs.readFileSync(Path.join(Canonical, 'tests/tooling/PreviewGoldens.json'), 'utf8'));
 function Plan(Name) {
-  return { SchemaVersion: 1, ProjectRevision: 'sha256:' + 'a'.repeat(64), ApiVersion: '0.4.0-experimental', PackVersion: 'foundation-b-development', SemanticRevision: 'b'.repeat(40),
+  return { SchemaVersion: 1, ProjectRevision: 'sha256:' + 'a'.repeat(64), ApiVersion: '0.4.0-experimental', PackVersion: '0.4.0-rc.1', SemanticRevision: 'b'.repeat(40),
     ToolingBuildId: 'sha256:' + 'c'.repeat(64), ProjectId: '0/', Entry: 'init.luau', ...globalThis.structuredClone(Goldens.find(G => G.Name === Name).Plan) };
 }
 function Fixture() {
