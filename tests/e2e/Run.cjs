@@ -24,7 +24,7 @@ async function ClickTrust(Label) {
   try {
     const Response = new Promise(Resolve => Socket.addEventListener('message', Event => { const Value = JSON.parse(Event.data); if (Value.id === 1) Resolve(Value); }));
     Socket.send(JSON.stringify({ id: 1, method: 'Runtime.evaluate', params: { returnByValue: true,
-      expression: `(() => { const Label = ${JSON.stringify(Label)}; const Button = [...document.querySelectorAll('[role="button"]')].find(Item => Item.textContent.trim() === Label || Item.getAttribute('aria-label')?.startsWith(Label + ', Keyboard')); if (!Button) return false; Button.click(); return true; })()` } }));
+      expression: `(() => { const Label = ${JSON.stringify(Label)}; if (Label === 'catalog') return [...document.querySelectorAll('.quick-input-title')].some(Item => Item.textContent === 'CarbonLuau: Search Item and Prefab Catalog'); const Button = [...document.querySelectorAll('[role="button"]')].find(Item => Item.textContent.trim() === Label || Item.getAttribute('aria-label')?.startsWith(Label + ', Keyboard')); if (!Button) return false; Button.click(); return true; })()` } }));
     return (await Response).result?.result?.value === true;
   } finally { Socket.close(); }
 }
@@ -46,6 +46,7 @@ async function Run(Mode, Executable) {
         try { await ClickTrust(State.Stage === 'grant' ? 'Trust' : "Don't Trust"); } catch { /* Workbench may be reloading. */ }
       }
       if (State.Stage === 'panel' && await Panel.Action(State, Work)) Fs.writeFileSync(Marker, JSON.stringify({Stage:'panel-done',Action:State.Action}));
+      if (State.Stage === 'catalog' && await ClickTrust('catalog')) Fs.writeFileSync(Marker, JSON.stringify({Stage:'catalog-ready'}));
       await Delay(250);
     }
     if (!Exited) { Child.kill(); throw new Error('VS Code E2E timed out.\n' + Output); }
@@ -61,8 +62,8 @@ async function Main() {
   // Avoid --extensionTestsPath: that environment does not preserve normal trust
   // storage across reopen. This companion runs through ordinary activation.
   Fs.writeFileSync(Path.join(Harness, 'Harness.cjs'), `const Vscode = require('vscode'); exports.activate = async () => { try { await require(${JSON.stringify(Path.join(__dirname, 'Suite.cjs'))}).run(); } catch (Error) { require('node:fs').writeFileSync(${JSON.stringify(Marker)}, JSON.stringify({Stage:'failed', Error:String(Error.stack)})); console.error(Error); } await Vscode.commands.executeCommand('workbench.action.quit'); };`);
-  Fs.writeFileSync(Path.join(Profile, 'User/settings.json'), JSON.stringify({ 'security.workspace.trust.startupPrompt': 'never', 'telemetry.telemetryLevel': 'off', 'update.mode': 'none', 'workbench.startupEditor': 'none', 'extensions.autoUpdate': false }));
-  Fs.writeFileSync(Path.join(Workspace, 'init.luau'), 'local Players = game:GetService("Players")\nlocal Player = Players:GetPlayers()[1]\nPlayer:GiveItem("wood", 1, GiveItemBehavior.InventoryOnly)\nlocal Value: number = "wrong"\nreturn Value\n');
+  Fs.writeFileSync(Path.join(Profile, 'User/settings.json'), JSON.stringify({ 'security.workspace.trust.startupPrompt': 'never', 'telemetry.telemetryLevel': 'off', 'update.mode': 'none', 'workbench.startupEditor': 'none', 'extensions.autoUpdate': false, 'editor.wordBasedSuggestions': 'off' }));
+  Fs.writeFileSync(Path.join(Workspace, 'init.luau'), 'local Players = game:GetService("Players")\nlocal Player = Players:GetPlayers()[1]\nlocal Inventory = Player:GetInventory()\nInventory:GiveItem("wood", 1, GiveItemBehavior.InventoryOnly)\nlocal Value: number = "wrong"\nlocal A = Item.Scrap\nlocal B = Prefab.Loot.Barrel1\nlocal BadItem = Item.Scrpa\nlocal BadPrefab = Prefab.Loot.Barrel3\nreturn Value\n');
   Fs.writeFileSync(Path.join(Workspace, '.config.luau'), 'while true do end');
   const Executable = await Download({ version: '1.95.3', cachePath: Path.join(Root, 'build/vscode-cache') });
   if (Vsix) {

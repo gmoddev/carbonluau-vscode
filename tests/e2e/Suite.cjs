@@ -34,6 +34,21 @@ exports.run = async () => {
     Fs.writeFileSync(Marker, JSON.stringify({Stage:'panel',Action,Started:Date.now(),...Extra}));
     await Until(() => JSON.parse(Fs.readFileSync(Marker,'utf8')).Stage === 'panel-done', 'real WebView ' + Action);
   };
+  const SearchCatalog = async () => {
+    const Original = Document.getText(), Clipboard = await Vscode.env.clipboard.readText();
+    try {
+      for (const [Query, Expected] of [['metal.fragments', 'Item.MetalFragments'], ['Barrel2', 'Prefab.Loot.Barrel2']]) {
+        const Search = Vscode.commands.executeCommand('carbonLuau.searchCatalog');
+        Stage('catalog');
+        await Until(() => JSON.parse(Fs.readFileSync(Marker, 'utf8')).Stage === 'catalog-ready', 'catalog picker visible in real workbench');
+        await Vscode.commands.executeCommand('type', { text: Query });
+        await Vscode.commands.executeCommand('workbench.action.acceptSelectedQuickOpen');
+        await Search;
+        Assert.equal(await Vscode.env.clipboard.readText(), Expected);
+        Assert.equal(Document.getText(), Original, 'discovery never rewrites ordinary strings');
+      }
+    } finally { await Vscode.env.clipboard.writeText(Clipboard); }
+  };
   if (Mode === 'revoke') {
     Assert.equal(Vscode.workspace.isTrusted, false);
     await Assert.rejects(Extension.exports.RequestPreview({ProjectId: '0/', Viewport: {Width: 1280, Height: 720}}), /trusted workspace/);
@@ -46,9 +61,10 @@ exports.run = async () => {
     Assert.equal(Vscode.workspace.isTrusted, false);
     await Assert.rejects(Extension.exports.RequestPreview({ProjectId: '0/', Viewport: {Width: 1280, Height: 720}}), /trusted workspace/);
     if (AnalysisProcesses()) Assert.equal(AnalysisProcesses().length, 0);
+    await SearchCatalog();
     await Vscode.commands.executeCommand('carbonLuau.previewGui'); await PanelTest('restricted');
     await Vscode.commands.executeCommand('workbench.action.closeActiveEditor');
-    const Hovers = await Vscode.commands.executeCommand('vscode.executeHoverProvider', Document.uri, new Vscode.Position(2, 9));
+    const Hovers = await Vscode.commands.executeCommand('vscode.executeHoverProvider', Document.uri, new Vscode.Position(3, 13));
     Assert.ok(Hovers.some(Hover => Hover.contents.some(Content => Content.value?.includes('GiveItem') && /Canonical.*CarbonLuau/.test(Content.value))));
     await Vscode.commands.executeCommand('workbench.trust.manage'); Stage('grant');
     await Until(() => Vscode.workspace.isTrusted, 'actual Workspace Trust grant');
@@ -56,10 +72,20 @@ exports.run = async () => {
   await Until(() => Vscode.languages.getDiagnostics(Document.uri).some(Item => Item.source === 'CarbonLuau types' && Item.message.includes('number')), 'type diagnostics');
   const Hovers = await Vscode.commands.executeCommand('vscode.executeHoverProvider', Document.uri, new Vscode.Position(1, 8));
   Assert.ok(Hovers.some(Hover => Hover.contents.some(Content => Content.value?.includes('Player'))));
-  const Completion = await Vscode.commands.executeCommand('vscode.executeCompletionItemProvider', Document.uri, new Vscode.Position(2, 7));
+  const Completion = await Vscode.commands.executeCommand('vscode.executeCompletionItemProvider', Document.uri, new Vscode.Position(3, 10));
   Assert.ok(Completion.items.some(Item => Item.label === 'GiveItem'));
-  const Signatures = await Vscode.commands.executeCommand('vscode.executeSignatureHelpProvider', Document.uri, new Vscode.Position(2, 24));
+  const Signatures = await Vscode.commands.executeCommand('vscode.executeSignatureHelpProvider', Document.uri, new Vscode.Position(3, 27));
   Assert.ok(Signatures.signatures.some(Item => Item.label.includes('GiveItem')));
+  const Catalog = JSON.parse(Fs.readFileSync(require('node:path').join(Extension.extensionPath, 'tooling', `${Process.platform}-${Process.arch}`, 'catalog-symbols.json'), 'utf8'));
+  for (const [Line, Character, Expected] of [[5, 15, Catalog.Items.map(Row => Row.Symbol).sort()], [6, 22, ['Barrel1', 'Barrel2']]]) {
+    const Result = await Vscode.commands.executeCommand('vscode.executeCompletionItemProvider', Document.uri, new Vscode.Position(Line, Character));
+    Assert.deepEqual([...new Set(Result.items.map(Item => typeof Item.label === 'string' ? Item.label : Item.label.label))].sort(), Expected);
+  }
+  const CatalogHovers = await Vscode.commands.executeCommand('vscode.executeHoverProvider', Document.uri, new Vscode.Position(5, 17));
+  Assert.ok(CatalogHovers.some(Hover => Hover.contents.some(Content => /scrap/.test(Content.value) && /qualified/.test(Content.value))));
+  await Until(() => ['Scrpa', 'Barrel3'].every(Name => Vscode.languages.getDiagnostics(Document.uri).some(Item => Item.source === 'CarbonLuau types' && Item.message.includes(Name))), 'misspelled catalog type diagnostics');
+  if (Mode !== 'restricted') await SearchCatalog();
+  Fs.writeFileSync(require('node:path').join(require('node:path').dirname(Marker), `catalog-${Mode}.json`), JSON.stringify({ Api: '0.7.5-experimental', Items: Catalog.Items.length, Prefabs: Catalog.Prefabs.length, Search: 'canonical string and symbol; clipboard only; source unchanged', Typos: ['Scrpa', 'Barrel3'], Trust: Vscode.workspace.isTrusted }, null, 2));
   if (Mode === 'restricted') { Stage('complete'); return; }
   if (AnalysisProcesses()) {
     const First = AnalysisProcesses()[0]; Assert.ok(First);

@@ -17,7 +17,10 @@ Windows/Linux x64 support language analysis and GUI preview after Workspace
 Trust. macOS arm64 provides static tooling only; no macOS x64 artifact is qualified.
 Restricted Mode retains syntax, canonical API information and project diagnostics.
 Extension version `0.0.1` uses tooling pack `0.4.0-rc.1` for scripting API
-`0.4.0-experimental`; these are separate compatibility identities.
+`0.7.5-experimental`; these are separate compatibility identities. The retained
+pack format/profile version is not a runtime API version or a new release.
+The exact canonical source pin is in [tooling-source.json](tooling-source.json).
+This development API is not the published v0.7.0 runtime.
 
 ## Develop and run
 
@@ -62,8 +65,11 @@ modules stay inaccessible. `require("local/module")`, `require("@addon")` and
 `require("@addon/public/module")` use the runtime's shared legality rules. This is
 development analysis, with no registry, downloading or version solver.
 
-The installed `0.4.0-experimental` API includes current Player/inventory, GUI,
-Signals, value types and enums. Reference hovers work in static mode; trusted
+The installed `0.7.5-experimental` API includes PlayerInventory mutations and
+sampled ItemChanged, Workspace/Entity lifetimes and gameplay Signals, strict Loot
+replacement, persistence/Query, GUI, value types and enums. Acquire inventory with
+`Player:GetInventory()`; the former Player inventory methods have no aliases.
+Reference hovers work in static mode; trusted
 mode adds type diagnostics, inferred hover, completion, signatures and source
 navigation. Reference hovers identify themselves as canonical API information,
 not expression type inference. Unsupported API/schema identities fail explicitly.
@@ -71,6 +77,28 @@ not expression type inference. Unsupported API/schema identities fail explicitly
 Commands: **Preview GUI**, **Validate Project**, **Select Scripting API**, **Restart Tooling**, and
 **Show Output**, all under **CarbonLuau** in the Command Palette. Only installed
 offline API targets can be selected.
+
+## Item and prefab discovery
+
+**CarbonLuau: Search Item and Prefab Catalog** searches 221 qualified Item
+constants and two Prefab.Loot constants by symbol or canonical string, offline in
+both trust modes. Each result shows the exact string and canonical capability
+summary. Selecting a result copies its constant to the clipboard; it never edits
+source. Reference hover, trusted LSP completion and misspelled-field diagnostics
+use generated canonical metadata/definitions. No server or runtime lookup occurs.
+
+`Item.Scrap`, `Item.MetalFragments`, `Item.Wood` and `Prefab.Loot.Barrel1` / `Barrel2`
+are ordinary strings. Catalog membership qualifies the recorded Loot capability;
+each other service still applies its own validator. See [the example](examples/Catalogs.luau)
+and the canonical [catalog reference](https://github.com/gmoddev/CarbonLuau/blob/fff095f57cc53b5f4acf3d45e3ba033ba499c319/docs/api/Catalogs.md).
+Raw-string rewrite code actions are deliberately absent: shadowed globals and
+unrelated strings require scope-aware proof before an edit can preserve behavior.
+
+Only the bundled API is offered by the selector. A configured/cached old API
+fails explicitly; use Select Scripting API to migrate. Existing older candidate
+artifacts remain paired with their original API; installing this candidate does
+not upgrade a server. No automatic download, fallback, version solver or claim
+that published v0.7.0 supports these globals is made.
 
 ## Workspace Trust
 

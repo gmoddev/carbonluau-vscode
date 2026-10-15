@@ -31,13 +31,18 @@ Name = "carbonluau-vscode-" + Provenance["ExtensionVersion"] + "-" + Platform
 Artifact = Output / (Name + ".vsix")
 ProvenanceBytes = (json.dumps(Provenance, indent=2, sort_keys=True) + "\n").encode()
 with tempfile.TemporaryDirectory(prefix="carbonluau-vsix-") as Temporary:
-    Raw = Path(Temporary) / "raw.vsix"
-    # CI checks first; vsce's standard prepublish hook builds the payload.
-    subprocess.run(["node", str(Root / "node_modules/@vscode/vsce/vsce"), "package", "--target", Target,
-                    "--no-dependencies", "--no-update-package-json", "--no-git-tag-version",
-                    "--skip-license", "--out", str(Raw)], cwd=Root, check=True)
-    with zipfile.ZipFile(Raw) as Archive:
-        Payload = {Entry.filename: (Archive.read(Entry), Entry.external_attr) for Entry in Archive.infolist() if not Entry.is_dir()}
+    Payload = None
+    for Attempt in range(2):
+        Raw = Path(Temporary) / ("raw-" + str(Attempt) + ".vsix")
+        # Independent vsce invocations each run the standard prepublish build.
+        subprocess.run(["node", str(Root / "node_modules/@vscode/vsce/vsce"), "package", "--target", Target,
+                        "--no-dependencies", "--no-update-package-json", "--no-git-tag-version",
+                        "--skip-license", "--out", str(Raw)], cwd=Root, check=True)
+        with zipfile.ZipFile(Raw) as Archive:
+            Current = {Entry.filename: (Archive.read(Entry), Entry.external_attr) for Entry in Archive.infolist() if not Entry.is_dir()}
+        if Payload is not None and Payload != Current:
+            raise SystemExit("Independent VSIX build payloads differ")
+        Payload = Current
     if not any(Name.startswith("extension/tooling/" + Platform + "/") for Name in Payload):
         raise SystemExit("VSIX omitted tooling pack")
     for EntryName in Payload:

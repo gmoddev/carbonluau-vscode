@@ -72,6 +72,10 @@
         "title": "CarbonLuau: Restart Tooling"
       },
       {
+        "command": "carbonLuau.searchCatalog",
+        "title": "CarbonLuau: Search Item and Prefab Catalog"
+      },
+      {
         "command": "carbonLuau.showOutput",
         "title": "CarbonLuau: Show Output"
       }

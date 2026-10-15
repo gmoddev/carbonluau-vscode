@@ -24,6 +24,10 @@ export async function LoadPack(ExtensionRoot: string): Promise<Pack> {
   const Stat = await Fs.lstat(Root);
   if (!Stat.isDirectory() || Stat.isSymbolicLink()) throw new Error('Tooling pack directory is unsafe.');
   const ManifestFile = Path.join(Root, 'pack.json');
+  const SourceFile = Path.join(ExtensionRoot, 'tooling-source.json');
+  const SourceStat = await Fs.lstat(SourceFile);
+  if (!SourceStat.isFile() || SourceStat.isSymbolicLink() || SourceStat.size > 65536) throw new Error('Unsafe canonical source pin.');
+  const Source = JSON.parse(await Fs.readFile(SourceFile, 'utf8')) as { Revision: string; ScriptingApi: string };
   if ((await Fs.lstat(ManifestFile)).isSymbolicLink() || (await Fs.stat(ManifestFile)).size > 65536) throw new Error('Tooling pack manifest is unsafe.');
   const Manifest = JSON.parse(await Fs.readFile(ManifestFile, 'utf8')) as {
     ManifestSchema: number; Platform: string; PackVersion: string; ApiVersion: string;
@@ -35,7 +39,9 @@ export async function LoadPack(ExtensionRoot: string): Promise<Pack> {
     PreviewNative: string; PreviewLauncher: string; PreviewContainmentProfile: string; ToolingBuildId: string; SemanticRevision: string;
   };
   if (Manifest.ManifestSchema !== 1 || Manifest.Platform !== Platform ||
-      Manifest.PackVersion !== '0.4.0-rc.1' || !Manifest.Files || Object.keys(Manifest.Files).length > 512) throw new Error('Incompatible CarbonLuau tooling pack.');
+      Manifest.PackVersion !== '0.4.0-rc.1' || Manifest.ApiVersion !== Source.ScriptingApi || Manifest.SemanticRevision !== Source.Revision ||
+      !['0.4.0-experimental', '0.7.5-experimental'].includes(Source.ScriptingApi) || !/^[0-9a-f]{40}$/.test(Source.Revision) ||
+      !Manifest.Files || Object.keys(Manifest.Files).length > 512) throw new Error('Incompatible CarbonLuau tooling pack.');
   for (const [Name, Digest] of Object.entries(Manifest.Files)) {
     if (!/^[a-zA-Z0-9_.-]+$/.test(Name) || Name === '.' || Name === '..' || !/^[0-9a-f]{64}$/.test(Digest)) throw new Error('Unsafe tooling pack file.');
     const File = Path.join(Root, Name);

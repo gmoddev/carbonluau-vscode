@@ -6,6 +6,23 @@ canonical implementation used by CI; read that revision's `AICONTEXT.md`,
 `docs/ToolingFoundationA.md` and `docs/ToolingFoundationACompletion.md`.
 This repository contains editor integration, not a second package/module parser.
 
+Current synchronization and release gates are in [ReleaseReadiness.md](ReleaseReadiness.md).
+The canonical source pin selects development API 0.7.5-experimental. Pack admission
+requires exact API and semantic revision equality with the packaged source pin,
+in addition to existing payload hashes and execution profile checks. Workspace
+settings never choose binaries. Older installed targets fail explicitly rather
+than silently receiving current API definitions.
+
+Catalog.ts builds at most 223 discovery rows from the canonical host's generated
+API metadata (8192-member transport ceiling, 128-character symbols, 256-character
+canonical strings, 4096-character summaries). It verifies the current 221/2
+shape, readonly literals and unique names/values. The standard VS Code picker
+filters symbols and descriptions; selection copies a constant after a generation
+guard. It adds no source parsing, workspace edits, runtime enumeration or new
+language server. Existing trusted LSP owns completion and type diagnostics;
+existing reference hover owns static capability information. Restart/unload clear
+the discovery rows and stale metadata registrations.
+
 ## Language-analysis security amendment
 
 The accepted [D19 decision](https://github.com/gmoddev/CarbonLuau/blob/9c33a98ee123238ee073a819a4938827596e5b25/docs/ToolingLanguageAnalysisSecurity.md)

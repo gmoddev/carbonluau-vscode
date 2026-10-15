@@ -6,6 +6,7 @@ import { Language } from './Language';
 import { RegisterMetadata } from './Metadata';
 import { Preview, PreviewSelection, PreviewState, ToolingPreviewPlan } from './Preview';
 import { PreviewPanel } from './PreviewPanel';
+import { GetCatalog, CatalogEntry } from './Catalog';
 
 interface SourceDiagnostic { Folder: string; Path: string; Code: string; Message: string; Severity: string; Line: number; Column: number; EndLine: number; EndColumn: number }
 interface Inspection { Diagnostics: SourceDiagnostic[]; Imports: unknown[]; Projects: { Id: string; Kind: string; Prefix: string; PackageId?: string; ValidPackage: boolean }[] }
@@ -22,6 +23,7 @@ class ProjectManager {
   private Preview?: Preview;
   private Panel?: PreviewPanel;
   private Inspection?: Inspection;
+  private Catalog: CatalogEntry[] = [];
   private SelectedApi = '';
   private Generation = 0;
   private Running?: Promise<void>;
@@ -91,7 +93,9 @@ class ProjectManager {
     try {
       await Host.Request('initialize', { ExtensionVersion: this.Context.extension.packageJSON.version, ApiVersion: this.SelectedApi,
         PackageSchema: 1, Platform: this.Pack.Platform, PackVersion: this.Pack.PackVersion, Capabilities: ['StaticAnalysis', 'Metadata'] });
-      this.Metadata?.dispose(); this.Metadata = RegisterMetadata(await Host.Request('getMetadata', {}));
+      const Metadata = await Host.Request('getMetadata', {});
+      this.Catalog = GetCatalog(Metadata, this.SelectedApi);
+      this.Metadata?.dispose(); this.Metadata = RegisterMetadata(Metadata);
       this.Host = Host;
     } catch (Error) { await Host.Stop(); throw Error; }
   }
@@ -120,8 +124,17 @@ class ProjectManager {
       }
     } catch (Error) { this.Log(String(Error)); }
   }
+  async SearchCatalog(): Promise<void> {
+    await this.Validate();
+    if (!this.Host || !this.Catalog.length || this.Stopped) return;
+    const Generation = this.Generation;
+    const Selected = await Vscode.window.showQuickPick(this.Catalog.map(Entry => ({ label: Entry.Name, description: Entry.Value, detail: Entry.Summary })),
+      { title: 'CarbonLuau: Search Item and Prefab Catalog', placeHolder: 'Search a symbol or canonical string; select to copy its constant', matchOnDescription: true });
+    if (Selected && Generation === this.Generation && !this.Stopped) await Vscode.env.clipboard.writeText(Selected.label);
+  }
   async Restart(): Promise<void> {
     ++this.Generation; this.Pending = false;
+    this.Catalog = []; this.Metadata?.dispose(); this.Metadata = undefined;
     this.Panel?.Suspend('Restarting tooling…');
     await this.Preview?.Stop(); this.Preview = undefined;
     await this.Language?.Stop(); this.Language?.dispose(); this.Language = undefined;
@@ -131,6 +144,7 @@ class ProjectManager {
   }
   async Stop(): Promise<void> {
     this.Stopped = true; ++this.Generation; this.Pending = false;
+    this.Catalog = [];
     this.Panel?.dispose(); this.Panel = undefined;
     await this.Preview?.Stop(); this.Preview = undefined;
     if (this.Timer) clearTimeout(this.Timer);
@@ -172,7 +186,8 @@ export function activate(Context: Vscode.ExtensionContext): { RequestPreview: (S
   const Current = Manager;
   for (const [Name, Handler] of [
     ['validateProject', () => Current.Validate()], ['selectScriptingApi', () => Current.SelectApi()],
-    ['restartTooling', () => Current.Restart()], ['showOutput', () => Current.ShowOutput()], ['previewGui', () => Current.ShowPreview()]
+    ['restartTooling', () => Current.Restart()], ['showOutput', () => Current.ShowOutput()], ['previewGui', () => Current.ShowPreview()],
+    ['searchCatalog', () => Current.SearchCatalog()]
   ] as const) Context.subscriptions.push(Vscode.commands.registerCommand('carbonLuau.' + Name, Handler));
   const Watcher = Vscode.workspace.createFileSystemWatcher('**/{addon.json,*.luau,*.claddon}');
   Context.subscriptions.push(Watcher, Watcher.onDidChange(() => Current.Schedule()), Watcher.onDidCreate(() => Current.Schedule()), Watcher.onDidDelete(() => Current.Schedule()),

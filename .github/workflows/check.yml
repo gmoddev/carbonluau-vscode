@@ -45,6 +45,8 @@ jobs:
             "CARBONLUAU_ANALYSIS_FIXTURE=$Fixture" >> $env:GITHUB_ENV
           }
       - run: npm run check
+      - name: Repeat canonical pack assembly in a fresh directory
+        run: python tools/CheckPack.py
       - name: Build deterministic platform VSIX candidate
         shell: pwsh
         run: |
@@ -70,5 +72,8 @@ jobs:
           path: |
             build/e2e-*/*.log
             build/e2e-*/panel-*.json
+            build/e2e-*/catalog-*.json
             build/e2e-*/preview.png
+            build/e2e-*/phase.json
+            build/pack-reproducibility.json
           if-no-files-found: ignore

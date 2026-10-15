@@ -22,11 +22,18 @@ Test('pack policy mismatch preserves static mode while bad payloads/identities f
     AnalysisProfile: 'TrustedSnapshotAnalysis', AnalysisProxyRevision: 1, TransformRevision: 2,
     AnalysisContainmentProfile: { 'win32-x64': 'WindowsJobCommit1GiB-Active1-Suspended-v1', 'linux-x64': 'LinuxAddressSpace2GiB-Rss1GiB-ProcessGroup-v1' }[Platform] };
   const Save = () => Fs.writeFileSync(Path.join(Root, 'pack.json'), JSON.stringify(Manifest));
+  Manifest.SemanticRevision = '2ada473399e752e8d178cce089cc9a7d442f32cf';
+  const Pin = () => Fs.writeFileSync(Path.join(Temp, 'tooling-source.json'), JSON.stringify({ Revision: Manifest.SemanticRevision, ScriptingApi: Manifest.ApiVersion }));
   try {
+    Pin();
     Save(); Assert.equal((await LoadPack(Temp)).LanguageServerQualified, ['win32-x64', 'linux-x64'].includes(Platform));
     Manifest.AnalysisProxyRevision = 99; Save(); Assert.equal((await LoadPack(Temp)).LanguageServerQualified, false);
     Manifest.PackVersion = 'unknown'; Save(); await Assert.rejects(LoadPack(Temp), /Incompatible/);
     Manifest.PackVersion = '0.4.0-rc.1'; Save();
+    Manifest.ApiVersion = '0.7.5-experimental'; Save(); await Assert.rejects(LoadPack(Temp), /Incompatible/);
+    Pin(); Assert.equal((await LoadPack(Temp)).ApiVersion, '0.7.5-experimental');
+    Manifest.SemanticRevision = '0'.repeat(40); Save(); await Assert.rejects(LoadPack(Temp), /Incompatible/);
+    Pin();
     Fs.writeFileSync(Path.join(Root, 'host'), 'replacement'); await Assert.rejects(LoadPack(Temp), /integrity/);
   } finally { Fs.rmSync(Temp, { recursive: true }); }
 });

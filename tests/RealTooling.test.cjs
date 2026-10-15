@@ -5,6 +5,7 @@ const Fs = require('node:fs');
 const { test: Test } = require('node:test');
 const { LoadPack } = require('../dist/Pack');
 const { ToolingClient, Revision } = require('../dist/ToolingClient');
+const { GetCatalog } = require('../dist/Catalog');
 const Root = Path.resolve(__dirname, '..');
 const Available = Fs.existsSync(Path.join(Root, 'tooling', `${Process.platform}-${Process.arch}`, 'pack.json'));
 
@@ -16,7 +17,11 @@ Test('real tooling resolves declared sibling IDs with canonical package visibili
     await Client.Request('initialize', { ExtensionVersion: '0.0.1', ApiVersion: Pack.ApiVersion, PackageSchema: 1, Platform: Pack.Platform,
       PackVersion: Pack.PackVersion, Capabilities: ['StaticAnalysis', 'Metadata'] });
     const Metadata = await Client.Request('getMetadata', {});
-    Assert.ok(Metadata.Catalog.Members.some(Member => Member.Id === 'Player.GiveItem'));
+    Assert.ok(Metadata.Catalog.Members.some(Member => Member.Id === 'PlayerInventory.GiveItem'));
+    const Entries = GetCatalog(Metadata, Pack.ApiVersion);
+    Assert.equal(Entries.length, 223);
+    Assert.equal(Entries.find(Entry => Entry.Name === 'Item.MetalFragments').Value, 'metal.fragments');
+    Assert.equal(Entries.find(Entry => Entry.Name === 'Prefab.Loot.Barrel2').Value, 'assets/bundled/prefabs/autospawn/resource/loot/loot-barrel-2.prefab');
     const Source = 'local Shop = require("@economy")\nlocal Cost: number = Shop.Price\nreturn Cost';
     const Folder = (Id, Values) => ({ Id, Files: Object.entries(Values).map(([Path, Text]) => ({ Path, Text })) });
     const Params = { Folders: [

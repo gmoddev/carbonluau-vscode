@@ -1,6 +1,6 @@
 {
   "Repository": "gmoddev/CarbonLuau",
-  "Revision": "2ada473399e752e8d178cce089cc9a7d442f32cf",
+  "Revision": "fff095f57cc53b5f4acf3d45e3ba033ba499c319",
   "AnalysisSecurityPolicyVersion": 1,
-  "ScriptingApi": "0.4.0-experimental"
+  "ScriptingApi": "0.7.5-experimental"
 }
