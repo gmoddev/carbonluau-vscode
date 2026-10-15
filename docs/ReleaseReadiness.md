@@ -1,6 +1,7 @@
 # Cross-repository development candidate
 
-Status: implementation candidate; final-source CI and platform evidence pending.
+Status: runtime/editor synchronization qualified at the implementation sources
+below; experimental publication is held for the unresolved inventory CI failure.
 Canonical dependency: CarbonLuau fff095f57cc53b5f4acf3d45e3ba033ba499c319,
 API 0.7.5-experimental. Extension package 0.0.1, tooling profile 0.4.0-rc.1,
 protocol/metadata/package/preview schemas 1 and LSP 1.70.0 remain unchanged.
@@ -26,6 +27,49 @@ is retained at the canonical source. The D8 Windows inventory CI failure remains
 an explicit release blocker until status/counter evidence establishes a cause;
 subsequent green runs do not explain the original compound assertion failure.
 The consolidated runtime report will record exact final commits and CI links.
+
+## Committed implementation qualification
+
+Extension implementation `c2d3ac9ad27af3c7fe97447ea73bd1ab91d4649d` passes
+[all three platform jobs](https://github.com/gmoddev/carbonluau-vscode/actions/runs/38814564532).
+The canonical runtime dependency remains fff095f57cc53b5f4acf3d45e3ba033ba499c319;
+the current runtime audit/diagnostic source
+`18104098b6fa6b8298787eddff83873dec44a29b` also passes
+[runtime/sanitizers](https://github.com/gmoddev/CarbonLuau/actions/runs/38813149842),
+[tooling](https://github.com/gmoddev/CarbonLuau/actions/runs/38813149926),
+[baseline](https://github.com/gmoddev/CarbonLuau/actions/runs/38813149928) and
+[documentation](https://github.com/gmoddev/CarbonLuau/actions/runs/38813149861).
+Runtime production, native, generated API, catalog and allowlist inputs have no
+changes from the qualified dependency in this synchronization.
+
+| Platform | Unit/security/real-tooling tests | Actual clean installed VSIX | Independent pack and VSIX builds |
+|---|---|---|---|
+| Windows x64 | 48 PASS, zero skips | Restricted/trusted/reopen/revocation PASS | 2 / 2, identical |
+| glibc Linux x64 | 48 PASS, zero skips | Restricted/trusted/reopen/revocation PASS | 2 / 2, identical |
+| macOS arm64 static-only | 35 PASS, 13 execution-profile skips | Not claimed | 2 / 2, identical |
+
+Both actual editor suites verify 221 Item fields and two Prefab.Loot fields,
+literal/capability hover, misspellings, canonical-name and symbol search, exact
+clipboard contents, unchanged source, cancellation on restart, configured old API
+rejection/recovery and the existing GUI/process security suite. Each suite uses
+VS Code 1.95.3, build 07b4ff1883f94da91f6d698744fc7c3638b59720. The extension's
+new example also typechecks through the selected canonical definitions.
+
+The [machine-readable evidence](qualification/ReleaseReadiness-Evidence.json)
+contains all three implementation VSIX hashes/build IDs and 41 raw receipt
+hashes. Every packaged canonical metadata/definition/symbol file matches its
+authoritative runtime source bytes; every pack payload hash is verified.
+The catalog remains bounded to 223 rows and one active picker, canceled on source
+change, newer search, restart and unload. No runtime memory/resource allowance
+changes. The [consolidated readiness report](https://github.com/gmoddev/CarbonLuau/blob/main/docs/CrossRepo-ReleaseReadiness.md)
+owns the unchanged physical evidence, inventory blocker and release recommendation.
+
+This documentation/provenance closure changes no implementation. Its exact
+committed-source matrix must also pass before final delivery, which supplies both
+final tested SHAs and CI links. Implementation artifact hashes in the ledger are
+attributed to c2d3ac9; a final closure artifact has a distinct source provenance
+and must use its own companion checksum. No mutable main badge substitutes for
+matching the workflow headSha.
 
 The first Linux installed-VSIX attempt in
 [job 116688009463](https://github.com/gmoddev/carbonluau-vscode/actions/runs/38812226351/job/116688009463)

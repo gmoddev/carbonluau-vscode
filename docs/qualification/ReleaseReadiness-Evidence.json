@@ -1,0 +1,301 @@
+{
+  "SchemaVersion": 1,
+  "Date": "2026-10-15",
+  "ApiVersion": "0.7.5-experimental",
+  "ImplementationRevision": "c2d3ac9ad27af3c7fe97447ea73bd1ab91d4649d",
+  "CanonicalRuntimeRevision": "fff095f57cc53b5f4acf3d45e3ba033ba499c319",
+  "CI": {
+    "RunId": 38814564532,
+    "Url": "https://github.com/gmoddev/carbonluau-vscode/actions/runs/38814564532",
+    "Conclusion": "success",
+    "Jobs": [
+      {
+        "Id": 116695866182,
+        "Name": "check (ubuntu-latest)",
+        "Conclusion": "success"
+      },
+      {
+        "Id": 116695866495,
+        "Name": "check (macos-latest)",
+        "Conclusion": "success"
+      },
+      {
+        "Id": 116695866499,
+        "Name": "check (windows-latest)",
+        "Conclusion": "success"
+      }
+    ]
+  },
+  "Catalog": {
+    "Items": 221,
+    "Prefabs": 2,
+    "SearchRows": 223,
+    "MetadataMembersCeiling": 8192,
+    "SymbolCharacters": 128,
+    "CanonicalCharacters": 256,
+    "SummaryCharacters": 4096,
+    "OwnedPickers": 1,
+    "SourceRewrites": false,
+    "RuntimeEnumeration": false
+  },
+  "GeneratedFiles": {
+    "carbonluau-api.json": "187e64f184ff3961057613056f22d531d6d351022b5f21033c431b1e922fab7f",
+    "tooling-metadata.json": "9fb76ef1e36d891d2dd6def00f4ed0ea62ccb08e1f9456a036a4a86ab519cb7f",
+    "carbonluau.d.luau": "eb331d44c04a18dd71daa80bea58b18d80847a326ea9969150861efd254ce660",
+    "carbonluau-docs.json": "ad74fe30ac31611a53b2b00dd6d79ede6f4547c72ab19208354ea370ae23fff7",
+    "catalog-symbols.json": "7039cced8a50a833da2d038f8ae92e195995fe7e04a3f4c8758f8c8a2cfb87b2"
+  },
+  "Platforms": [
+    {
+      "Platform": "win32-x64",
+      "Mode": "TrustedAnalysisAndPreview",
+      "VSIX": "carbonluau-vscode-0.0.1-win32-x64.vsix",
+      "Sha256": "4fa4364e7be2fbaa9e47925adea8b89e4d345e994e63573e0f483c18ea8e8baf",
+      "Bytes": 42549049,
+      "ToolingBuildId": "sha256:296d2ed66cbf402dbb68124b3c48839ed7a26aa8f703e52ae3fe6865dd7f0f0c",
+      "PackManifestSha256": "34577efcad7dc1229387a8357f527dc9fb0a36bd9f869fcad1fe16144ef5ed73",
+      "IndependentPackAssemblies": 2,
+      "IndependentVscePrepublishBuilds": 2,
+      "TestsPassed": 48,
+      "TestsSkipped": 0,
+      "ActualCleanVSIXInstallation": true
+    },
+    {
+      "Platform": "linux-x64",
+      "Mode": "TrustedAnalysisAndPreview",
+      "VSIX": "carbonluau-vscode-0.0.1-linux-x64.vsix",
+      "Sha256": "962707fad2bed76d33c0534f733c6cdd401ce99f3b7335458ffea0605fbd0e96",
+      "Bytes": 41541037,
+      "ToolingBuildId": "sha256:281e0c42021c95c5b768e37dad25e9a3a9ae14a8b847b8b19832bc34375bb291",
+      "PackManifestSha256": "af530a66d89b606be6c6d9c1ada8134dda682deb6a08dd8af0fa9d6b84cfc210",
+      "IndependentPackAssemblies": 2,
+      "IndependentVscePrepublishBuilds": 2,
+      "TestsPassed": 48,
+      "TestsSkipped": 0,
+      "ActualCleanVSIXInstallation": true
+    },
+    {
+      "Platform": "darwin-arm64",
+      "Mode": "StaticOnly",
+      "VSIX": "carbonluau-vscode-0.0.1-darwin-arm64.vsix",
+      "Sha256": "17be5ee1308bbca11834d04f6f83302d4cddbff263cf7725a4fc0d2355545d69",
+      "Bytes": 40862748,
+      "ToolingBuildId": "sha256:786494f2d9430ab43bc9ecef38808b0e0d6f63c8bbf8e7e800af4d1fb4ffe82b",
+      "PackManifestSha256": "42516595039531de8a2be34d5a1507c53978b9aa03ec7897d5369b091654616b",
+      "IndependentPackAssemblies": 2,
+      "IndependentVscePrepublishBuilds": 2,
+      "TestsPassed": 35,
+      "TestsSkipped": 13,
+      "ActualCleanVSIXInstallation": false
+    }
+  ],
+  "Receipts": [
+    {
+      "Path": "Editor-c2d3ac9-Windows-Receipts/e2e-iDP8cK/catalog-reopen.json",
+      "Sha256": "faa50515794f818e78506c20eb8e6f6f1e8f40046c814ec5bd06570b83b61170",
+      "Bytes": 204
+    },
+    {
+      "Path": "Editor-c2d3ac9-Windows-Receipts/e2e-iDP8cK/catalog-restricted.json",
+      "Sha256": "faa50515794f818e78506c20eb8e6f6f1e8f40046c814ec5bd06570b83b61170",
+      "Bytes": 204
+    },
+    {
+      "Path": "Editor-c2d3ac9-Windows-Receipts/e2e-iDP8cK/catalog-search-reopen.json",
+      "Sha256": "5b371c4a15c511e41a6f69204fb8ef5baf1fb0dc74334784ae1cf5bc7fdca078",
+      "Bytes": 344
+    },
+    {
+      "Path": "Editor-c2d3ac9-Windows-Receipts/e2e-iDP8cK/catalog-search-restricted.json",
+      "Sha256": "730e4a80c437a0f7a376c8cabcbb6b68151fd6aba729c55e3f34a9a38647d44a",
+      "Bytes": 345
+    },
+    {
+      "Path": "Editor-c2d3ac9-Windows-Receipts/e2e-iDP8cK/catalog-ui.json",
+      "Sha256": "fe88d7e95ceeaa03c414421d2bb6c4e4cfaa21947eff7bb5997bf39ba4ef6896",
+      "Bytes": 1849
+    },
+    {
+      "Path": "Editor-c2d3ac9-Windows-Receipts/e2e-iDP8cK/panel-custom.json",
+      "Sha256": "8e9d970fa79a0ed38e9821222ea8026921666af2bc4e05ff68aa3e41ebd2eb5c",
+      "Bytes": 1028
+    },
+    {
+      "Path": "Editor-c2d3ac9-Windows-Receipts/e2e-iDP8cK/panel-error.json",
+      "Sha256": "061cb1014d79f7813f54795ed935889c38ab1bbf024695084742cfcf8fae994c",
+      "Bytes": 233
+    },
+    {
+      "Path": "Editor-c2d3ac9-Windows-Receipts/e2e-iDP8cK/panel-inspect.json",
+      "Sha256": "68b2278d8febcdfeeea55b98033586b3cb7ae52f8d2aaeba72e66eb27c83dd95",
+      "Bytes": 6210
+    },
+    {
+      "Path": "Editor-c2d3ac9-Windows-Receipts/e2e-iDP8cK/panel-near-limit.json",
+      "Sha256": "1f181e9e8f654b1b8d139c1035b64741e27bc91523744a646b286ba7ac244a03",
+      "Bytes": 1266
+    },
+    {
+      "Path": "Editor-c2d3ac9-Windows-Receipts/e2e-iDP8cK/panel-recover.json",
+      "Sha256": "525f7085d566dcc4d99baf47710fee279235ae50aab8a8d6f0ce66f4375e46b7",
+      "Bytes": 966
+    },
+    {
+      "Path": "Editor-c2d3ac9-Windows-Receipts/e2e-iDP8cK/panel-restricted.json",
+      "Sha256": "346e8b58ee8ffe6f197f9a2a249bd505bf4e0b594fc99737c019f8395b86f043",
+      "Bytes": 254
+    },
+    {
+      "Path": "Editor-c2d3ac9-Windows-Receipts/e2e-iDP8cK/panel-saved-0.json",
+      "Sha256": "eafb7615011e5713845a9a3ccbb5164718c3c9349bb6abbefe436b6cb56ead63",
+      "Bytes": 987
+    },
+    {
+      "Path": "Editor-c2d3ac9-Windows-Receipts/e2e-iDP8cK/panel-saved-1.json",
+      "Sha256": "458a1939ba65a59f7019d4b096516b684ac026aaad8d2fdb3c2f8ef36180bc2d",
+      "Bytes": 987
+    },
+    {
+      "Path": "Editor-c2d3ac9-Windows-Receipts/e2e-iDP8cK/panel-saved-2.json",
+      "Sha256": "186f19b4a3e6ccc19928d27e8b9b30e91866316c03345b3854692b6fe9eda351",
+      "Bytes": 987
+    },
+    {
+      "Path": "Editor-c2d3ac9-Windows-Receipts/e2e-iDP8cK/panel-viewport.json",
+      "Sha256": "f5a4e0b40cc97664c581e06e6e498183bc4d22836ad3e505307156ad12d20623",
+      "Bytes": 1015
+    },
+    {
+      "Path": "Editor-c2d3ac9-Windows-Receipts/e2e-iDP8cK/phase.json",
+      "Sha256": "4e7d64a1efb401cf1b837fab4201aec20591a89f32221fed7cba1251a1b0c372",
+      "Bytes": 20
+    },
+    {
+      "Path": "Editor-c2d3ac9-Windows-Receipts/e2e-iDP8cK/preview.png",
+      "Sha256": "ade7f171bcedea5919a673b95fe779a4268524e449eb4142faa1c28025057b41",
+      "Bytes": 55083
+    },
+    {
+      "Path": "Editor-c2d3ac9-Windows-Receipts/e2e-iDP8cK/reopen.log",
+      "Sha256": "6375e561d4f37694c9006e66bee410ee8898cef5f8579f9ff5864d94423ce9b1",
+      "Bytes": 669
+    },
+    {
+      "Path": "Editor-c2d3ac9-Windows-Receipts/e2e-iDP8cK/restricted.log",
+      "Sha256": "8f0a6ad6ff0a1e6aeffe3967b095aabd6b31e188a23ed8534d49c847c542c1c3",
+      "Bytes": 570
+    },
+    {
+      "Path": "Editor-c2d3ac9-Windows-Receipts/pack-reproducibility.json",
+      "Sha256": "25f4ce36d3c7cb1d4e566940c35c8887ccf8385045ecfdb49ea637daa426955b",
+      "Bytes": 21953
+    },
+    {
+      "Path": "Editor-c2d3ac9-Linux-Receipts/e2e-NLEw7u/catalog-reopen.json",
+      "Sha256": "faa50515794f818e78506c20eb8e6f6f1e8f40046c814ec5bd06570b83b61170",
+      "Bytes": 204
+    },
+    {
+      "Path": "Editor-c2d3ac9-Linux-Receipts/e2e-NLEw7u/catalog-restricted.json",
+      "Sha256": "faa50515794f818e78506c20eb8e6f6f1e8f40046c814ec5bd06570b83b61170",
+      "Bytes": 204
+    },
+    {
+      "Path": "Editor-c2d3ac9-Linux-Receipts/e2e-NLEw7u/catalog-search-reopen.json",
+      "Sha256": "5b371c4a15c511e41a6f69204fb8ef5baf1fb0dc74334784ae1cf5bc7fdca078",
+      "Bytes": 344
+    },
+    {
+      "Path": "Editor-c2d3ac9-Linux-Receipts/e2e-NLEw7u/catalog-search-restricted.json",
+      "Sha256": "730e4a80c437a0f7a376c8cabcbb6b68151fd6aba729c55e3f34a9a38647d44a",
+      "Bytes": 345
+    },
+    {
+      "Path": "Editor-c2d3ac9-Linux-Receipts/e2e-NLEw7u/catalog-ui.json",
+      "Sha256": "fe88d7e95ceeaa03c414421d2bb6c4e4cfaa21947eff7bb5997bf39ba4ef6896",
+      "Bytes": 1849
+    },
+    {
+      "Path": "Editor-c2d3ac9-Linux-Receipts/e2e-NLEw7u/panel-custom.json",
+      "Sha256": "d6daf618696a30a00aef1006a9fdda8519b1aaafe6ca71d3b215b8140d5acda8",
+      "Bytes": 1028
+    },
+    {
+      "Path": "Editor-c2d3ac9-Linux-Receipts/e2e-NLEw7u/panel-error.json",
+      "Sha256": "061cb1014d79f7813f54795ed935889c38ab1bbf024695084742cfcf8fae994c",
+      "Bytes": 233
+    },
+    {
+      "Path": "Editor-c2d3ac9-Linux-Receipts/e2e-NLEw7u/panel-inspect.json",
+      "Sha256": "5c8f69eadeb02e9673c0555d91920cb04e0735572e6657c32622ef7032774bdf",
+      "Bytes": 6210
+    },
+    {
+      "Path": "Editor-c2d3ac9-Linux-Receipts/e2e-NLEw7u/panel-near-limit.json",
+      "Sha256": "626299f4af7526037ee804dfd41110ed6c96d757a431acbe9ae9f4db7f63b42a",
+      "Bytes": 1266
+    },
+    {
+      "Path": "Editor-c2d3ac9-Linux-Receipts/e2e-NLEw7u/panel-recover.json",
+      "Sha256": "08ae779b042f8c0ae04eee5d510ac147479b46f83a52155bca7f22be7fd40434",
+      "Bytes": 966
+    },
+    {
+      "Path": "Editor-c2d3ac9-Linux-Receipts/e2e-NLEw7u/panel-restricted.json",
+      "Sha256": "346e8b58ee8ffe6f197f9a2a249bd505bf4e0b594fc99737c019f8395b86f043",
+      "Bytes": 254
+    },
+    {
+      "Path": "Editor-c2d3ac9-Linux-Receipts/e2e-NLEw7u/panel-saved-0.json",
+      "Sha256": "299a2f1753716ea446f16c2e72f8d12441b38feddcd31906c1f352deb8984242",
+      "Bytes": 987
+    },
+    {
+      "Path": "Editor-c2d3ac9-Linux-Receipts/e2e-NLEw7u/panel-saved-1.json",
+      "Sha256": "eb41c9873a661988b194ca09d8549ae497137a96f51ca983a1b9a97aec7915e8",
+      "Bytes": 987
+    },
+    {
+      "Path": "Editor-c2d3ac9-Linux-Receipts/e2e-NLEw7u/panel-saved-2.json",
+      "Sha256": "4ddf0ab17039b79c8ed870630d7f1b5654b35035265e1edf0ff268cecd5f231a",
+      "Bytes": 987
+    },
+    {
+      "Path": "Editor-c2d3ac9-Linux-Receipts/e2e-NLEw7u/panel-viewport.json",
+      "Sha256": "cd16c2a20e858293183b220e6063d77a24b97ca463d156fc5447555c01630d09",
+      "Bytes": 1029
+    },
+    {
+      "Path": "Editor-c2d3ac9-Linux-Receipts/e2e-NLEw7u/phase.json",
+      "Sha256": "4e7d64a1efb401cf1b837fab4201aec20591a89f32221fed7cba1251a1b0c372",
+      "Bytes": 20
+    },
+    {
+      "Path": "Editor-c2d3ac9-Linux-Receipts/e2e-NLEw7u/preview.png",
+      "Sha256": "8539a9c6db5d717556e7a46cbe0356a615e2c020072a19929c59ddbcb0921980",
+      "Bytes": 83253
+    },
+    {
+      "Path": "Editor-c2d3ac9-Linux-Receipts/e2e-NLEw7u/reopen.log",
+      "Sha256": "2fb6a73125941ca17988eb1f02eab663ba42834437ab4f6cc98b2988a798a361",
+      "Bytes": 6407
+    },
+    {
+      "Path": "Editor-c2d3ac9-Linux-Receipts/e2e-NLEw7u/restricted.log",
+      "Sha256": "09074b43d69a08f3609fec4c2010788df84bb3051f0082f9ed078352b96dab74",
+      "Bytes": 2841
+    },
+    {
+      "Path": "Editor-c2d3ac9-Linux-Receipts/pack-reproducibility.json",
+      "Sha256": "6d9ae28ad4b8b8cc7bf2357204472494ad6af9d8777a8a152fa111adbea042e0",
+      "Bytes": 21784
+    },
+    {
+      "Path": "Editor-c2d3ac9-macOS-Receipts/pack-reproducibility.json",
+      "Sha256": "beedbd9a6ac9dd82778d51d512accf7bb713d6286deede12d743cef7e7c20683",
+      "Bytes": 21520
+    }
+  ],
+  "ReleaseDisposition": "HOLD: historical inventory initialization CI failure lacks status/counter evidence; subsequent passes do not establish its cause.",
+  "Closure": "This ledger attributes immutable implementation receipts; final documentation-only commits receive separate exact-headSha CI, reported in delivery. No publication or package version assignment."
+}
