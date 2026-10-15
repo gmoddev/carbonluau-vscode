@@ -36,18 +36,21 @@ exports.run = async () => {
   };
   const SearchCatalog = async () => {
     const Original = Document.getText(), Clipboard = await Vscode.env.clipboard.readText();
+    const Results = [];
     try {
       for (const [Query, Expected] of [['metal.fragments', 'Item.MetalFragments'], ['Barrel2', 'Prefab.Loot.Barrel2']]) {
         const Search = Vscode.commands.executeCommand('carbonLuau.searchCatalog');
         Stage('catalog');
         await Until(() => JSON.parse(Fs.readFileSync(Marker, 'utf8')).Stage === 'catalog-ready', 'catalog picker visible in real workbench');
-        await Vscode.commands.executeCommand('type', { text: Query });
-        Fs.writeFileSync(Marker, JSON.stringify({Stage:'catalog-filter',Expected}));
+        Fs.writeFileSync(Marker, JSON.stringify({Stage:'catalog-filter',Query,Expected}));
         await Until(() => JSON.parse(Fs.readFileSync(Marker, 'utf8')).Stage === 'catalog-filtered', 'catalog query selects exact symbol in real workbench');
         await Search;
-        Assert.equal(await Vscode.env.clipboard.readText(), Expected);
+        const Actual = await Vscode.env.clipboard.readText();
+        Assert.equal(Actual, Expected);
         Assert.equal(Document.getText(), Original, 'discovery never rewrites ordinary strings');
+        Results.push({ Query, Expected, Actual, SourceUnchanged: Document.getText() === Original });
       }
+      Fs.writeFileSync(require('node:path').join(require('node:path').dirname(Marker), `catalog-search-${Mode}.json`), JSON.stringify({ Trust: Vscode.workspace.isTrusted, Results }, null, 2));
     } finally { await Vscode.env.clipboard.writeText(Clipboard); }
   };
   if (Mode === 'revoke') {
@@ -88,6 +91,11 @@ exports.run = async () => {
   await Until(() => ['Scrpa', 'Barrel3'].every(Name => Vscode.languages.getDiagnostics(Document.uri).some(Item => Item.source === 'CarbonLuau types' && Item.message.includes(Name))), 'misspelled catalog type diagnostics');
   if (Mode !== 'restricted') {
     await SearchCatalog();
+    const Clipboard = await Vscode.env.clipboard.readText();
+    const Search = Vscode.commands.executeCommand('carbonLuau.searchCatalog'); Stage('catalog');
+    await Until(() => JSON.parse(Fs.readFileSync(Marker, 'utf8')).Stage === 'catalog-ready', 'catalog picker before restart');
+    await Vscode.commands.executeCommand('carbonLuau.restartTooling'); await Search;
+    Assert.equal(await Vscode.env.clipboard.readText(), Clipboard, 'restart cancels stale selection without copying');
     await Vscode.workspace.getConfiguration('carbonLuau').update('apiVersion', '0.4.0-experimental', Vscode.ConfigurationTarget.Workspace);
     await Vscode.commands.executeCommand('carbonLuau.restartTooling'); await Vscode.commands.executeCommand('carbonLuau.validateProject');
     await Until(() => Vscode.languages.getDiagnostics(Document.uri).some(Item => Item.code === 'ToolingUnavailable'), 'old API target fails explicitly');

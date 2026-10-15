@@ -21,7 +21,9 @@ filters symbols and descriptions; selection copies a constant after a generation
 guard. It adds no source parsing, workspace edits, runtime enumeration or new
 language server. Existing trusted LSP owns completion and type diagnostics;
 existing reference hover owns static capability information. Restart/unload clear
-the discovery rows and stale metadata registrations.
+the discovery rows and stale metadata registrations. At most one owned picker is
+active; a newer picker, source invalidation, restart or unload cancels the old
+picker. Cancellation and generation checks prevent stale clipboard writes.
 
 ## Language-analysis security amendment
 

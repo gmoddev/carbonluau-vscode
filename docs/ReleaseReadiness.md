@@ -36,3 +36,35 @@ and the job's vscode-e2e artifact. The corrected driver waits for the actual
 focused query result, then sends Enter through its existing test-only loopback
 CDP channel. Exact copied-value and unchanged-source assertions remain intact.
 Production search requires only normal VS Code Quick Pick selection.
+
+The second Linux attempt, source `34c435bf7c6c846f84982357fad567f1d449dd62`,
+[job 116690864455](https://github.com/gmoddev/carbonluau-vscode/actions/runs/38813071605/job/116690864455),
+times out at the unchanged 30-second filtered-result assertion. Its driver used
+the extension-host `type` command rather than typing into the actual focused
+Quick Pick input. The corrected test drives input and Enter through test-only
+CDP, verifies visible/focused picker state and exact query/selected label, and
+retains bounded catalog-ui.json snapshots. The clipboard and source-preservation
+assertions are unchanged. Raw log and phase artifacts remain in
+`C:/Sandbox/Codex/CrossRepoReadiness20261015/Extension-Second-Linux-Negative`,
+with the raw job log alongside it, SHA256
+`25e611f4af221918d94efc4ee0c9b22e57ed4edccdaec26044d642a0fdb3043a`.
+The first Windows attempt has the same unavailable-command failure as Linux;
+its artifacts are retained in Extension-Windows-Negative. No retry, increased
+test deadline or weakened expected catalog result is introduced.
+
+The corrected working source passes both actual Linux VS Code 1.95.3 phases in
+an isolated two-CPU/4-GiB container, 2026-10-15T22:01:55Z–22:03:17Z: Restricted
+Mode, Trust grant/reopen/revocation, search/value selection, 221/2 completion,
+hover/typos, old-API rejection/recovery, picker cancellation, GUI and process
+recovery. Development source archive SHA256
+`ad2c8e797723a9fa90f9c60a37d560ae66e3bf0beb08fa86daa4830bbc49f6e4`;
+raw runner/state/phase/UI/panel receipts are retained at
+`C:/Sandbox/Codex/CrossRepoReadiness20261015/rapid-editor-r1` and
+`/root/codex/crossrepo-readiness-20261015/rapid-editor-r1`.
+This rapid development test truthfully pairs its isolated source pin with the
+CI-built runtime candidate 18104098b6fa6b8298787eddff83873dec44a29b. It is not a
+final-source installed-VSIX claim; the hosted matrix still must test the committed
+extension with its unchanged fff095f qualified tooling dependency. Container exit
+is zero, no OOM; the temporary container is removed and eight protected containers
+remain unchanged. Distro/editor dependencies are ephemeral RAM-only files, with
+no host install or machine policy changes.

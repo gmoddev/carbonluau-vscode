@@ -24,6 +24,7 @@ class ProjectManager {
   private Panel?: PreviewPanel;
   private Inspection?: Inspection;
   private Catalog: CatalogEntry[] = [];
+  private CatalogPicker?: Vscode.CancellationTokenSource;
   private SelectedApi = '';
   private Generation = 0;
   private Running?: Promise<void>;
@@ -38,6 +39,7 @@ class ProjectManager {
   ShowOutput(): void { this.Output.show(true); }
   Schedule(): void {
     if (this.Stopped) return;
+    this.CatalogPicker?.cancel();
     ++this.Generation; this.Pending = true; this.Diagnostics.clear(); this.Language?.Invalidate();
     this.Preview?.Invalidate();
     this.Panel?.Invalidate();
@@ -128,12 +130,17 @@ class ProjectManager {
     await this.Validate();
     if (!this.Host || !this.Catalog.length || this.Stopped) return;
     const Generation = this.Generation;
-    const Selected = await Vscode.window.showQuickPick(this.Catalog.map(Entry => ({ label: Entry.Name, description: Entry.Value, detail: Entry.Summary })),
-      { title: 'CarbonLuau: Search Item and Prefab Catalog', placeHolder: 'Search a symbol or canonical string; select to copy its constant', matchOnDescription: true });
-    if (Selected && Generation === this.Generation && !this.Stopped) await Vscode.env.clipboard.writeText(Selected.label);
+    this.CatalogPicker?.cancel();
+    const Picker = new Vscode.CancellationTokenSource(); this.CatalogPicker = Picker;
+    try {
+      const Selected = await Vscode.window.showQuickPick(this.Catalog.map(Entry => ({ label: Entry.Name, description: Entry.Value, detail: Entry.Summary })),
+        { title: 'CarbonLuau: Search Item and Prefab Catalog', placeHolder: 'Search a symbol or canonical string; select to copy its constant', matchOnDescription: true }, Picker.token);
+      if (Selected && !Picker.token.isCancellationRequested && Generation === this.Generation && !this.Stopped) await Vscode.env.clipboard.writeText(Selected.label);
+    } finally { if (this.CatalogPicker === Picker) this.CatalogPicker = undefined; Picker.dispose(); }
   }
   async Restart(): Promise<void> {
     ++this.Generation; this.Pending = false;
+    this.CatalogPicker?.cancel();
     this.Catalog = []; this.Metadata?.dispose(); this.Metadata = undefined;
     this.Panel?.Suspend('Restarting tooling…');
     await this.Preview?.Stop(); this.Preview = undefined;
@@ -144,6 +151,7 @@ class ProjectManager {
   }
   async Stop(): Promise<void> {
     this.Stopped = true; ++this.Generation; this.Pending = false;
+    this.CatalogPicker?.cancel();
     this.Catalog = [];
     this.Panel?.dispose(); this.Panel = undefined;
     await this.Preview?.Stop(); this.Preview = undefined;

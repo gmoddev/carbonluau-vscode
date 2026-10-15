@@ -24,16 +24,8 @@ async function ClickTrust(Label) {
   try {
     const Response = new Promise(Resolve => Socket.addEventListener('message', Event => { const Value = JSON.parse(Event.data); if (Value.id === 1) Resolve(Value); }));
     Socket.send(JSON.stringify({ id: 1, method: 'Runtime.evaluate', params: { returnByValue: true,
-      expression: `(() => { const Label = ${JSON.stringify(Label)}; if (Label === 'catalog') return [...document.querySelectorAll('.quick-input-title')].some(Item => Item.textContent.trim() === 'CarbonLuau: Search Item and Prefab Catalog'); if (Label.startsWith('catalog-match:')) return [...document.querySelectorAll('.quick-input-widget .monaco-list-row.focused')].some(Item => Item.textContent.includes(Label.slice(14))); const Button = [...document.querySelectorAll('[role="button"]')].find(Item => Item.textContent.trim() === Label || Item.getAttribute('aria-label')?.startsWith(Label + ', Keyboard')); if (!Button) return false; Button.click(); return true; })()` } }));
-    const Matched = (await Response).result?.result?.value === true;
-    if (Matched && Label.startsWith('catalog-match:')) {
-      for (const [Id, Type] of [[2, 'keyDown'], [3, 'keyUp']]) {
-        const Applied = new Promise(Resolve => Socket.addEventListener('message', Event => { const Value = JSON.parse(Event.data); if (Value.id === Id) Resolve(Value); }));
-        Socket.send(JSON.stringify({ id: Id, method: 'Input.dispatchKeyEvent', params: { type: Type, key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13, nativeVirtualKeyCode: 13 } }));
-        await Applied;
-      }
-    }
-    return Matched;
+      expression: `(() => { const Label = ${JSON.stringify(Label)}; const Button = [...document.querySelectorAll('[role="button"]')].find(Item => Item.textContent.trim() === Label || Item.getAttribute('aria-label')?.startsWith(Label + ', Keyboard')); if (!Button) return false; Button.click(); return true; })()` } }));
+    return (await Response).result?.result?.value === true;
   } finally { Socket.close(); }
 }
 async function Run(Mode, Executable) {
@@ -54,8 +46,8 @@ async function Run(Mode, Executable) {
         try { await ClickTrust(State.Stage === 'grant' ? 'Trust' : "Don't Trust"); } catch { /* Workbench may be reloading. */ }
       }
       if (State.Stage === 'panel' && await Panel.Action(State, Work)) Fs.writeFileSync(Marker, JSON.stringify({Stage:'panel-done',Action:State.Action}));
-      if (State.Stage === 'catalog' && await ClickTrust('catalog')) Fs.writeFileSync(Marker, JSON.stringify({Stage:'catalog-ready'}));
-      if (State.Stage === 'catalog-filter' && await ClickTrust('catalog-match:' + State.Expected)) Fs.writeFileSync(Marker, JSON.stringify({Stage:'catalog-filtered'}));
+      if (State.Stage === 'catalog' && await Panel.Catalog(State, Work)) Fs.writeFileSync(Marker, JSON.stringify({Stage:'catalog-ready'}));
+      if (State.Stage === 'catalog-filter' && await Panel.Catalog(State, Work)) Fs.writeFileSync(Marker, JSON.stringify({Stage:'catalog-filtered'}));
       await Delay(250);
     }
     if (!Exited) { Child.kill(); throw new Error('VS Code E2E timed out.\n' + Output); }

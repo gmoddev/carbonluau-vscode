@@ -36,6 +36,32 @@ async function Evaluate(Expression, Screenshot) {
     }
   } finally { Cdp.Close(); }
 }
+exports.Catalog = async (State, Work) => {
+  const Targets = await (await globalThis.fetch('http://127.0.0.1:9237/json')).json();
+  const Page = Targets.find(Target => Target.type === 'page' && Target.url.includes('workbench')); if (!Page) return false;
+  const Cdp = await Connect(Page.webSocketDebuggerUrl);
+  try {
+    const Result = await Cdp.Call('Runtime.evaluate', {returnByValue:true,expression:`(() => {
+      const Widget=document.querySelector('.quick-input-widget'), Input=Widget?.querySelector('.quick-input-box input');
+      return {Visible:!!Widget?.getClientRects().length, Focused:Input===document.activeElement, Value:Input?.value,
+        Title:Widget?.querySelector('.quick-input-title')?.textContent.trim(),
+        Rows:[...Widget?.querySelectorAll('.monaco-list-row')??[]].slice(0,32).map(Row=>({Name:Row.querySelector('.label-name')?.textContent,
+          Focused:Row.classList.contains('focused'), Selected:Row.getAttribute('aria-selected'), Text:Row.textContent.slice(0,512)}))};
+    })()`});
+    const Value = Result.result?.result?.value;
+    Fs.writeFileSync(Path.join(Work, 'catalog-ui.json'), JSON.stringify({Stage:State.Stage,...Value}, null, 2));
+    if (!Value?.Visible || !Value.Focused || Value.Title !== 'CarbonLuau: Search Item and Prefab Catalog') return false;
+    if (State.Stage === 'catalog') return true;
+    if (Value.Value !== State.Query) {
+      await Cdp.Call('Runtime.evaluate', {expression:"document.querySelector('.quick-input-widget .quick-input-box input').select()"});
+      await Cdp.Call('Input.insertText', {text:State.Query});
+      return false;
+    }
+    if (!Value.Rows.some(Row => Row.Name === State.Expected && Row.Focused)) return false;
+    for (const Type of ['keyDown', 'keyUp']) await Cdp.Call('Input.dispatchKeyEvent', {type:Type,key:'Enter',code:'Enter',windowsVirtualKeyCode:13,nativeVirtualKeyCode:13});
+    return true;
+  } finally { Cdp.Close(); }
+};
 exports.Action = async (State, Work) => {
   const Check = `const Surface=D.getElementById('surface'), Status=D.getElementById('status').textContent;
     const Snapshot=()=>({Status,Revision:Surface.dataset.revision,Selected:Surface.dataset.selected,Width:Surface.style.width,
