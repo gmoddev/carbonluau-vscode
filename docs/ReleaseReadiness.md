@@ -26,3 +26,13 @@ is retained at the canonical source. The D8 Windows inventory CI failure remains
 an explicit release blocker until status/counter evidence establishes a cause;
 subsequent green runs do not explain the original compound assertion failure.
 The consolidated runtime report will record exact final commits and CI links.
+
+The first Linux installed-VSIX attempt in
+[job 116688009463](https://github.com/gmoddev/carbonluau-vscode/actions/runs/38812226351/job/116688009463)
+reaches the catalog picker but the test driver invokes an unavailable VS Code
+command, `workbench.action.acceptSelectedQuickOpen`. Raw phase/log artifacts are
+retained under `C:/Sandbox/Codex/CrossRepoReadiness20261015/Extension-Linux-Negative`
+and the job's vscode-e2e artifact. The corrected driver waits for the actual
+focused query result, then sends Enter through its existing test-only loopback
+CDP channel. Exact copied-value and unchanged-source assertions remain intact.
+Production search requires only normal VS Code Quick Pick selection.

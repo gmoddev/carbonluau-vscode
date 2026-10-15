@@ -42,7 +42,8 @@ exports.run = async () => {
         Stage('catalog');
         await Until(() => JSON.parse(Fs.readFileSync(Marker, 'utf8')).Stage === 'catalog-ready', 'catalog picker visible in real workbench');
         await Vscode.commands.executeCommand('type', { text: Query });
-        await Vscode.commands.executeCommand('workbench.action.acceptSelectedQuickOpen');
+        Fs.writeFileSync(Marker, JSON.stringify({Stage:'catalog-filter',Expected}));
+        await Until(() => JSON.parse(Fs.readFileSync(Marker, 'utf8')).Stage === 'catalog-filtered', 'catalog query selects exact symbol in real workbench');
         await Search;
         Assert.equal(await Vscode.env.clipboard.readText(), Expected);
         Assert.equal(Document.getText(), Original, 'discovery never rewrites ordinary strings');
@@ -62,6 +63,7 @@ exports.run = async () => {
     await Assert.rejects(Extension.exports.RequestPreview({ProjectId: '0/', Viewport: {Width: 1280, Height: 720}}), /trusted workspace/);
     if (AnalysisProcesses()) Assert.equal(AnalysisProcesses().length, 0);
     await SearchCatalog();
+    if (AnalysisProcesses()) Assert.equal(AnalysisProcesses().length, 0, 'catalog discovery stays static in Restricted Mode');
     await Vscode.commands.executeCommand('carbonLuau.previewGui'); await PanelTest('restricted');
     await Vscode.commands.executeCommand('workbench.action.closeActiveEditor');
     const Hovers = await Vscode.commands.executeCommand('vscode.executeHoverProvider', Document.uri, new Vscode.Position(3, 13));
@@ -84,7 +86,15 @@ exports.run = async () => {
   const CatalogHovers = await Vscode.commands.executeCommand('vscode.executeHoverProvider', Document.uri, new Vscode.Position(5, 17));
   Assert.ok(CatalogHovers.some(Hover => Hover.contents.some(Content => /scrap/.test(Content.value) && /qualified/.test(Content.value))));
   await Until(() => ['Scrpa', 'Barrel3'].every(Name => Vscode.languages.getDiagnostics(Document.uri).some(Item => Item.source === 'CarbonLuau types' && Item.message.includes(Name))), 'misspelled catalog type diagnostics');
-  if (Mode !== 'restricted') await SearchCatalog();
+  if (Mode !== 'restricted') {
+    await SearchCatalog();
+    await Vscode.workspace.getConfiguration('carbonLuau').update('apiVersion', '0.4.0-experimental', Vscode.ConfigurationTarget.Workspace);
+    await Vscode.commands.executeCommand('carbonLuau.restartTooling'); await Vscode.commands.executeCommand('carbonLuau.validateProject');
+    await Until(() => Vscode.languages.getDiagnostics(Document.uri).some(Item => Item.code === 'ToolingUnavailable'), 'old API target fails explicitly');
+    await Vscode.workspace.getConfiguration('carbonLuau').update('apiVersion', '', Vscode.ConfigurationTarget.Workspace);
+    await Vscode.commands.executeCommand('carbonLuau.restartTooling'); await Vscode.commands.executeCommand('carbonLuau.validateProject');
+    await Until(() => Vscode.languages.getDiagnostics(Document.uri).some(Item => Item.source === 'CarbonLuau types'), 'explicit current API selection restores analysis');
+  }
   Fs.writeFileSync(require('node:path').join(require('node:path').dirname(Marker), `catalog-${Mode}.json`), JSON.stringify({ Api: '0.7.5-experimental', Items: Catalog.Items.length, Prefabs: Catalog.Prefabs.length, Search: 'canonical string and symbol; clipboard only; source unchanged', Typos: ['Scrpa', 'Barrel3'], Trust: Vscode.workspace.isTrusted }, null, 2));
   if (Mode === 'restricted') { Stage('complete'); return; }
   if (AnalysisProcesses()) {

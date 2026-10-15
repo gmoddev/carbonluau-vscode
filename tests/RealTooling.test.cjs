@@ -39,5 +39,7 @@ Test('real tooling resolves declared sibling IDs with canonical package visibili
     Assert.equal((await Analyze()).Value.items.length, 0);
     Params.Folders[1].Files.find(File => File.Path === 'public.luau').Text = 'return {Price = "wrong"}';
     Assert.ok((await Analyze()).Value.items.some(Item => /number/.test(Item.message) && /string/.test(Item.message)));
+    Params.Folders[0].Files.find(File => File.Path === 'init.luau').Text = Fs.readFileSync(Path.join(Root, 'examples/Catalogs.luau'), 'utf8');
+    Assert.equal((await Analyze()).Value.items.length, 0, 'shipped two-prefab catalog example typechecks against the selected canonical definitions');
   } finally { await Client.Stop(); await Analysis.Stop(); }
 });

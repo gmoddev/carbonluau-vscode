@@ -87,6 +87,9 @@ for (const Trusted of [false, true]) {
     Assert.equal(Problems.get(Uri.toString())[0].code, 'Require3');
     Assert.equal(Problems.get(Uri.toString())[0].range.Values[0], 2);
     await Commands.get('carbonLuau.selectScriptingApi')(); Assert.equal(Api, Pack.ApiVersion);
+    Api = '0.7.0-experimental'; await Commands.get('carbonLuau.restartTooling')(); await Commands.get('carbonLuau.validateProject')();
+    Assert.equal(Problems.get(Uri.toString())[0].code, 'ToolingUnavailable', 'old configured API never receives different definitions silently');
+    await Commands.get('carbonLuau.selectScriptingApi')(); await Commands.get('carbonLuau.restartTooling')(); await Commands.get('carbonLuau.validateProject')();
     Failure = true; await Commands.get('carbonLuau.validateProject')();
     Assert.equal(Problems.get(Uri.toString())[0].code, 'ToolingUnavailable');
     Assert.ok(Logs.some(Text => Text.includes('Tooling stopped unexpectedly.')));

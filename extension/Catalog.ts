@@ -9,7 +9,7 @@ export function GetCatalog(Value: unknown, ApiVersion: string): CatalogEntry[] {
   let Items = 0, Prefabs = 0;
   for (const Member of Catalog.Members) {
     if (Member.OwnerId !== 'Item' && Member.OwnerId !== 'PrefabLoot') continue;
-    if (!/^[A-Za-z_][A-Za-z0-9_]{0,127}$/.test(Member.Name) || typeof Member.ValueType !== 'string' || Member.ValueType.length > 512 ||
+    if (typeof Member.Name !== 'string' || !/^[A-Za-z_][A-Za-z0-9_]{0,127}$/.test(Member.Name) || typeof Member.ValueType !== 'string' || Member.ValueType.length > 512 ||
         typeof Member.Summary !== 'string' || Member.Summary.length > 4096 || Member.Writable !== false) throw new Error('Invalid catalog member.');
     const Canonical: unknown = JSON.parse(Member.ValueType);
     if (typeof Canonical !== 'string' || !/^[a-zA-Z0-9_./-]{1,256}$/.test(Canonical)) throw new Error('Invalid catalog literal.');
